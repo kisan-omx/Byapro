@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .font-normal { font-family: 'NotoSansDevanagari_400Regular' !important; }
+  .font-medium { font-family: 'NotoSansDevanagari_500Medium' !important; }
+  .font-semibold { font-family: 'NotoSansDevanagari_600SemiBold' !important; }
+  .font-bold { font-family: 'NotoSansDevanagari_700Bold' !important; }
+  .font-extrabold { font-family: 'NotoSansDevanagari_800ExtraBold' !important; }
+  .font-black { font-family: 'NotoSansDevanagari_900Black' !important; }
+}
+
+Text, TextInput {
+  font-family: 'NotoSansDevanagari_400Regular';
+}
