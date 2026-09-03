@@ -4,6 +4,82 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before 
 
 # Byapro Development Rules
 
+What Byapro does
+
+The core idea is:
+
+Help a business owner record every business transaction, manage customers/suppliers, track stock, and know who owes whom — without complicated accounting.
+
+Your main MVP
+    Sales
+    Record a sale quickly
+    Create/share an invoice
+    Track paid and unpaid sales
+    Purchases
+    Record purchases from suppliers
+    Track what you owe suppliers
+    Party / Ledger
+    Customers who owe you
+    Suppliers you owe
+    Payment history
+    Payment in / payment out
+    Inventory
+    Add items
+    Track quantity
+    Automatically reduce stock after sales
+    Low-stock alerts
+    Expenses
+    Record business expenses
+    See where money is going
+    Dashboard
+    Keep it useful rather than a complicated accounting report:
+    Today’s sales
+    Unpaid/receivable amount
+    Payable amount
+    Low-stock items
+    Important business priorities
+    The important part: your positioning
+
+You shouldn't build Byapro as another complicated accounting app.
+
+Your target user is a business owner who wants to do their daily work quickly, not study financial reports.
+
+So the experience should be:
+
+Open Byapro → record sale → record payment → check customer balance → manage stock → done.
+
+Not:
+
+Open app → understand accounting terminology → configure reports → enter complicated data.
+
+Your strongest MVP loop
+CUSTOMER
+   ↓
+SALE
+   ↓
+PAID / UNPAID
+   ↓
+LEDGER
+   ↓
+PAYMENT
+   ↓
+BALANCE CLEARED
+
+And:
+
+PURCHASE
+   ↓
+SUPPLIER
+   ↓
+PAYABLE
+   ↓
+PAYMENT OUT
+
+With inventory connected to sales/purchases:
+
+PURCHASE → STOCK ↑
+SALE     → STOCK ↓
+
 ## 1. Core Rule 🔴
 
 **Solve the requested problem with the smallest safe change.**
@@ -1293,3 +1369,320 @@ Before reporting a task as complete:
 Do not guess.
 Do not make unrelated changes.
 Never sacrifice financial/data integrity for UI convenience.**
+
+
+The most important rule
+Firebase Auth
+    ↓
+firebase_uid
+    ↓
+Business Membership / Ownership
+    ↓
+business_id
+    ↓
+Sales / Purchases / Parties / Items / Expenses / Payments
+
+Do not make email the relationship between your tables.
+
+1. Firebase Auth = only identity
+
+Firebase should answer:
+
+Who is this user?
+Are they logged in?
+What's their Firebase UID?
+What's their email?
+Is their session valid?
+
+Example:
+
+const user = auth.currentUser;
+
+const uid = user?.uid;
+
+Your database should primarily identify the user by:
+
+firebase_uid
+
+not:
+
+email
+2. Supabase = your application's data
+
+Supabase/PostgreSQL should contain things like:
+
+users
+businesses
+business_members
+parties
+items
+sales
+sale_items
+purchases
+purchase_items
+payments
+expenses
+
+A simple structure could be:
+
+users
+-----
+id              ← Firebase UID
+email
+created_at
+businesses
+----------
+id              ← UUID
+name
+owner_id        ← Firebase UID
+created_at
+
+Then:
+
+parties
+-------
+id
+business_id
+name
+phone
+...
+
+items
+-----
+id
+business_id
+name
+stock
+...
+
+sales
+-----
+id
+business_id
+party_id
+total
+status
+...
+
+expenses
+--------
+id
+business_id
+amount
+...
+3. Every business-owned table needs business_id
+
+This is very important.
+
+For example:
+
+sales
+ ├── id
+ ├── business_id
+ ├── party_id
+ ├── total
+ └── created_at
+items
+ ├── id
+ ├── business_id
+ ├── name
+ ├── price
+ └── stock
+expenses
+ ├── id
+ ├── business_id
+ ├── category
+ ├── amount
+ └── created_at
+
+That gives you a clean boundary:
+
+Business A
+ ├── Parties
+ ├── Items
+ ├── Sales
+ ├── Purchases
+ └── Expenses
+
+Business B
+ ├── Parties
+ ├── Items
+ ├── Sales
+ ├── Purchases
+ └── Expenses
+
+Business A must never be able to read Business B's data.
+
+4. Business setup flow
+
+Since you said every user must have their own business, I would make your flow:
+
+Open Byapro
+     ↓
+Onboarding
+     ↓
+Login / Signup
+     ↓
+Firebase creates user
+     ↓
+Check whether business exists
+     ↓
+      ┌───────────────┐
+      │               │
+   No business     Business exists
+      │               │
+      ↓               ↓
+Business Setup       Home
+      │
+      ↓
+Create Business
+      │
+      ↓
+Home
+
+So after signup:
+
+Firebase UID
+     ↓
+Create user profile
+     ↓
+Create business
+     ↓
+Get business_id
+     ↓
+Home
+5. Don't store business_id in AsyncStorage as the source of truth
+
+You can cache it, but don't trust local storage for authorization.
+
+For example, don't do:
+
+const businessId = await AsyncStorage.getItem("businessId");
+
+fetchBusinessData(businessId);
+
+and assume that is enough.
+
+Instead, your backend/database security should verify that the authenticated Firebase user actually belongs to that business.
+
+6. Supabase RLS is extremely important
+
+Your biggest security layer should be Row Level Security (RLS).
+
+Conceptually:
+
+Firebase authenticated user
+          ↓
+        UID
+          ↓
+Does this UID belong to this business?
+          ↓
+       YES → allow
+       NO  → deny
+
+Never rely only on:
+
+if (user.uid === ownerId) {
+   // show data
+}
+
+in the React Native frontend.
+
+A malicious client can bypass frontend checks.
+
+The database must enforce the boundary.
+
+7. One thing I'd change for future-proofing
+
+Even if today:
+
+1 user = 1 business
+
+I recommend designing the database so it can eventually support:
+
+1 user → multiple businesses
+
+using a membership table:
+
+business_members
+----------------
+user_id
+business_id
+role
+
+Example:
+
+user_123
+   ├── business_A → owner
+   └── business_B → staff
+
+You don't have to build the multi-business UI now.
+
+But your database architecture won't need a major rewrite later.
+
+8. Your app architecture
+
+For your Expo + Firebase + Supabase setup, I'd keep this responsibility flow:
+
+Screen
+  ↓
+Hook
+  ↓
+Service
+  ↓
+Supabase Query
+  ↓
+PostgreSQL
+
+Authentication:
+
+Auth Screen
+  ↓
+Auth Hook
+  ↓
+Firebase Auth Service
+  ↓
+Firebase
+
+Business:
+
+Business Setup Screen
+  ↓
+Business Hook
+  ↓
+Business Service
+  ↓
+Supabase
+  ↓
+businesses
+
+Sales:
+
+Sale Screen
+  ↓
+useCreateSale()
+  ↓
+saleService
+  ↓
+Supabase
+  ↓
+sales + sale_items
+The 7 rules I'd put in your project
+
+Rule 1: Firebase Auth is the source of truth for user identity.
+
+Rule 2: Firebase uid, not email, identifies a user.
+
+Rule 3: Supabase stores Byapro's application/business data.
+
+Rule 4: Every business-owned table contains business_id.
+
+Rule 5: Never trust business_id, user ID, or permissions coming from the client without database authorization.
+
+Rule 6: Use Supabase RLS to prevent users from accessing another business's data.
+
+Rule 7: AsyncStorage is for convenience/cache/preferences—not authentication or authorization.
+
+The most important concept for Byapro is therefore:
+
+User owns/has access to Business → Business owns all operational data.

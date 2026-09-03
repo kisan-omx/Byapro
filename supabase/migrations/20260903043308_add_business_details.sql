@@ -1,0 +1,5 @@
+ALTER TABLE businesses 
+ADD COLUMN owner_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+ADD COLUMN category TEXT,
+ADD COLUMN country TEXT,
+ADD COLUMN currency TEXT;

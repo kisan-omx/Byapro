@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "520706100053",
+    "project_id": "byapro",
+    "storage_bucket": "byapro.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:520706100053:android:dddb7a63aa657e83227ddc",
+        "android_client_info": {
+          "package_name": "com.byapro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "520706100053-ejupj73a8lepo8straml6qen1gqjm1ra.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.byapro",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "520706100053-k05v9a5h4jnj6ali1urisj1k0oqbfm71.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUqNA1_VEUcz8Nj_cFGxTFJt9lkwJ1dQQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "520706100053-k05v9a5h4jnj6ali1urisj1k0oqbfm71.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
