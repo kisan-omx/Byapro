@@ -3,4 +3,6 @@ const { withNativeWind } = require('nativewind/metro');
  
 const config = getDefaultConfig(__dirname)
  
+config.resolver.sourceExts.push('cjs', 'mjs');
+config.resolver.unstable_enablePackageExports = false;
 module.exports = withNativeWind(config, { input: './src/style/global.css' })

@@ -2,38 +2,75 @@ import { useEffect, useState } from "react";
 import { Redirect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { View, ActivityIndicator } from "react-native";
-
+import { auth } from "../lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { supabase } from "../lib/supabase";
+import * as SplashScreen from "expo-splash-screen";
 export default function Index() {
-  const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
+  const [initialRoute, setInitialRoute] = useState<string | null>(null);
 
   useEffect(() => {
-    async function checkOnboarding() {
+    let unsubscribeAuth: (() => void) | undefined;
+
+    async function determineRoute() {
       try {
-        const value = await AsyncStorage.getItem("onboarding_completed");
-        if (value === "true") {
-          setIsFirstLaunch(false);
-        } else {
-          setIsFirstLaunch(true);
+        const onboardingValue = await AsyncStorage.getItem("onboarding_completed");
+        if (onboardingValue !== "true") {
+          setInitialRoute("/onboarding");
+          return;
         }
+
+        const checkUserBusiness = async (userId: string) => {
+          try {
+            const { data, error } = await supabase
+              .from("businesses")
+              .select("id")
+              .eq("owner_id", userId)
+              .single();
+            if (error || !data?.id) {
+              return "/setup-business";
+            }
+            return "/(tabs)/home";
+          } catch (err) {
+            return "/setup-business";
+          }
+        };
+
+        unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            const route = await checkUserBusiness(user.uid);
+            setInitialRoute(route);
+          } else {
+            setInitialRoute("/auth");
+          }
+        });
       } catch (e) {
-        setIsFirstLaunch(true);
+        setInitialRoute("/auth");
       }
     }
 
-    checkOnboarding();
+    determineRoute();
+
+    return () => {
+      if (unsubscribeAuth) {
+        unsubscribeAuth();
+      }
+    };
   }, []);
 
-  if (isFirstLaunch === null) {
-    return (
-      <View className="flex-1 items-center justify-center bg-surface">
-        <ActivityIndicator size="large" color="#000" />
-      </View>
-    );
+  useEffect(() => {
+    if (initialRoute) {
+      // Hide splash screen once we know the route
+      // A short timeout ensures the new route has started rendering
+      setTimeout(() => {
+        SplashScreen.hideAsync();
+      }, 10);
+    }
+  }, [initialRoute]);
+
+  if (initialRoute === null) {
+    return null;
   }
 
-  if (isFirstLaunch) {
-    return <Redirect href="/onboarding" />;
-  }
-
-  return <Redirect href="/auth" />;
+  return <Redirect href={initialRoute as any} />;
 }
