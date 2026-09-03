@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { Redirect } from "expo-router";
+import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { auth } from "../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { supabase } from "../lib/supabase";
 import * as SplashScreen from "expo-splash-screen";
+
 export default function Index() {
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     let unsubscribeAuth: (() => void) | undefined;
@@ -60,17 +62,23 @@ export default function Index() {
 
   useEffect(() => {
     if (initialRoute) {
-      // Hide splash screen once we know the route
-      // A short timeout ensures the new route has started rendering
-      setTimeout(() => {
-        SplashScreen.hideAsync();
-      }, 10);
+      // Use requestAnimationFrame to ensure the routing happens on the next frame
+      requestAnimationFrame(() => {
+        router.replace(initialRoute as any);
+        
+        // Wait for the new route to fully mount before hiding splash
+        // 300ms is a safe buffer to prevent any empty frames
+        setTimeout(() => {
+          SplashScreen.hideAsync().catch(() => {});
+        }, 300);
+      });
     }
   }, [initialRoute]);
 
-  if (initialRoute === null) {
-    return null;
-  }
-
-  return <Redirect href={initialRoute as any} />;
+  // Always return the fallback UI while determining route AND during the transition
+  return (
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: "#208AEF", justifyContent: "center", alignItems: "center" }]}>
+      <ActivityIndicator size="large" color="#FFFFFF" />
+    </View>
+  );
 }
