@@ -27,16 +27,16 @@ module.exports = {
       },
       colors: {
         // Brand Colors
-        primary: "#2563EB",       // Royal Blue
-        "primary-dark": "#1D4ED8",
-        "primary-light": "#DBEAFE",
+        primary: "#0EA5E9",       // Vibrant Sky Blue
+        "primary-dark": "#3B82F6",
+        "primary-light": "#E0F2FE",
 
         secondary: "#16A34A",     // Success Green
         "secondary-dark": "#15803D",
         "secondary-light": "#DCFCE7",
 
         // UI Colors
-        background: "#EBF2FC",
+        background: "#F9FAFB", // Very light gray
         surface: "#FFFFFF",
 
         text: "#0F172A",
@@ -47,6 +47,7 @@ module.exports = {
         success: "#16A34A",
         warning: "#F59E0B",
         error: "#DC2626",
+        "error-light": "#FEE2E2",
         info: "#0EA5E9",
       },
     },
