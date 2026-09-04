@@ -18,8 +18,8 @@ const SummaryCard = ({ title, subtitle, type }: SummaryCardProps) => {
   let arrowColor = '#475569'; // text-secondary
 
   if (isReceive) {
-    containerClass = 'bg-secondary-light border border-secondary/60 shadow-sm';
-    titleColor = 'text-secondary'; // Green amount
+    containerClass = 'bg-primary-light border border-primary/60 shadow-sm';
+    titleColor = 'text-primary'; // Primary (blue) amount
     subtitleColor = 'text-text-secondary'; // Gray subtitle
   } else if (isGive) {
     containerClass = 'bg-error-light border border-error/60 shadow-sm';
