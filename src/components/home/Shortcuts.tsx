@@ -1,15 +1,22 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 
+import { useRouter } from 'expo-router';
+
 interface ShortcutItemProps {
   title: string;
   iconName: keyof typeof MaterialIcons.glyphMap | keyof typeof Feather.glyphMap;
   iconFamily?: 'MaterialIcons' | 'Feather';
+  route?: string;
 }
 
-const ShortcutItem = ({ title, iconName, iconFamily = 'MaterialIcons' }: ShortcutItemProps) => {
+const ShortcutItem = ({ title, iconName, iconFamily = 'MaterialIcons', route }: ShortcutItemProps) => {
+  const router = useRouter();
   return (
-    <TouchableOpacity className="w-[23%] items-center mb-6">
+    <TouchableOpacity 
+      className="w-[23%] items-center mb-6"
+      onPress={() => route ? router.push(route as any) : null}
+    >
       <View className="w-12 h-12 bg-primary-light rounded-full items-center justify-center mb-2">
         {iconFamily === 'MaterialIcons' ? (
           <MaterialIcons name={iconName as any} size={24} color="#0EA5E9" />
@@ -36,7 +43,7 @@ export default function Shortcuts() {
       </View>
       
       <View className="flex-row flex-wrap justify-between">
-        <ShortcutItem title="Add Party" iconName="person-add" />
+        <ShortcutItem title="Quick Entry" iconName="flash-on" route="/quick-entry" />
         <ShortcutItem title="Sales Invoice" iconName="receipt" />
         <ShortcutItem title="Payment In" iconName="account-balance-wallet" />
         <ShortcutItem title="Payment Out" iconName="account-balance-wallet" />
