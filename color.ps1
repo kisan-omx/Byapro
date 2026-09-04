@@ -1,0 +1,1 @@
+Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile("C:\Users\DELL\.gemini\antigravity\brain\e5b979ec-050b-4f4f-8bb6-e351475c0c56\.user_uploaded\media_1788490502563.png"); $bmp = new-object System.Drawing.Bitmap($img); $pixel = $bmp.GetPixel(0,0); Write-Host ($pixel.R.ToString("X2") + $pixel.G.ToString("X2") + $pixel.B.ToString("X2"))
