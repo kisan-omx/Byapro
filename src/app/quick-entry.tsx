@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text } from 'react-native';
 
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import QuickEntryHeader from '../components/quick-entry/QuickEntryHeader';
 import QuickEntryTabs, { EntryType } from '../components/quick-entry/QuickEntryTabs';
 import PartySelector from '../components/quick-entry/PartySelector';
@@ -32,10 +32,19 @@ let activeDraft: QuickEntryDraft = {
 
 export default function QuickEntryScreen() {
   const router = useRouter();
-  const [entryType, setEntryTypeState] = useState<EntryType>(() => activeDraft.entryType);
+  const { type } = useLocalSearchParams<{ type?: EntryType }>();
+
+  const [entryType, setEntryTypeState] = useState<EntryType>(() => type || activeDraft.entryType);
   const [amount, setAmountState] = useState<string>(() => activeDraft.amount);
   const [selectedParty, setSelectedPartyState] = useState<Party | null>(() => activeDraft.selectedParty);
   const [isPartyModalVisible, setIsPartyModalVisible] = useState(false);
+
+  useEffect(() => {
+    if (type && type !== entryType) {
+      setEntryTypeState(type);
+      activeDraft.entryType = type;
+    }
+  }, [type]);
 
   // Sync state helpers to update both component state and activeDraft
   const setAmount = useCallback((updater: string | ((prev: string) => string)) => {

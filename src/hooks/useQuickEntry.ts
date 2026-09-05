@@ -15,6 +15,9 @@ import {
 import { Party } from '../components/quick-entry/PartySelectionModal';
 import { EntryType } from '../components/quick-entry/QuickEntryTabs';
 
+import { transactionEvents } from '../services/transactionEvents';
+import { TransactionItem, TransactionType } from '../types/transaction';
+
 export interface SuccessInfo {
   title: string;
   message: string;
@@ -94,7 +97,7 @@ export function useQuickEntry() {
 
       const amountNum = parseFloat(amount.toFixed(2));
 
-      // ── 1. Optimistic Success Display ──────────────────────────────────
+      // ── 1. Optimistic Success Display & Event Emission ──────────────────
       let optimisticInfo: SuccessInfo;
       switch (entryType) {
         case 'Sale': {
@@ -144,10 +147,72 @@ export function useQuickEntry() {
         }
       }
 
-      // Instantly show recorded component
+      // Instantly show recorded success component in Quick Entry
       setSuccessInfo(optimisticInfo);
 
-      // ── 2. Save in background ─────────────────────────────────────────
+      // Create optimistic TransactionItem for instant UI update on Transactions screen
+      const tempId = `temp-${Date.now()}`;
+      const nowIso = new Date().toISOString();
+
+      let optimisticType: TransactionType = 'Sale';
+      let partyName = 'Cash Sale';
+      let secondaryLabel = 'Balance';
+      let secondaryAmount = 0;
+
+      if (entryType === 'Sale') {
+        optimisticType = 'Sale';
+        partyName = selectedParty ? selectedParty.name : 'Cash Sale';
+        secondaryLabel = 'Balance';
+        secondaryAmount = selectedParty ? amountNum : 0;
+      } else if (entryType === 'Purchase') {
+        optimisticType = 'Purchase';
+        partyName = selectedParty ? selectedParty.name : 'Cash Purchase';
+        secondaryLabel = 'Balance';
+        secondaryAmount = selectedParty ? amountNum : 0;
+      } else if (entryType === 'Payment In') {
+        optimisticType = 'PaymentIn';
+        partyName = selectedParty ? selectedParty.name : 'Cash';
+        secondaryLabel = 'Unused';
+        secondaryAmount = amountNum;
+      } else if (entryType === 'Payment Out') {
+        optimisticType = 'PaymentOut';
+        partyName = selectedParty ? selectedParty.name : 'Cash';
+        secondaryLabel = 'Unused';
+        secondaryAmount = amountNum;
+      } else if (entryType === 'Expense') {
+        optimisticType = 'Expense';
+        partyName = selectedParty ? selectedParty.name : 'General Expense';
+        secondaryLabel = 'Unused';
+        secondaryAmount = amountNum;
+      }
+
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const nowDate = new Date();
+      const formattedDateStr = `${months[nowDate.getMonth()]} ${nowDate.getDate()}, ${nowDate.getFullYear().toString().slice(-2)}`;
+
+      const optimisticItem: TransactionItem = {
+        id: tempId,
+        type: optimisticType,
+        indexNo: '#1',
+        partyName,
+        totalAmount: amountNum,
+        secondaryAmount,
+        secondaryLabel,
+        status: 'Paid',
+        date: formattedDateStr,
+        rawDate: nowIso,
+        syncStatus: 'saving',
+        payload: {
+          entryType,
+          amountNum,
+          selectedParty,
+        },
+      };
+
+      // Emit optimistic created event (starts in 'saving' state)
+      transactionEvents.emitCreated(optimisticItem);
+
+      // ── 2. Save in background to Supabase database ─────────────────────
       isSaving.current = true;
       setSaving(true);
 
@@ -229,16 +294,20 @@ export function useQuickEntry() {
               break;
             }
           }
+
+          // Emit saved event -> transitions card from 'saving' to 'saved'
+          transactionEvents.emitSaved(tempId);
         } catch (err: any) {
           console.error('Quick entry background save error:', err);
-          // Fallback on error: dismiss success modal and rollback
+          // Transition card to 'failed' state with retry option
+          transactionEvents.emitFailed(tempId, err?.message);
           setSuccessInfo(null);
           if (onRollback) {
             onRollback();
           }
           Alert.alert(
             'Save Failed',
-            err?.message || 'Something went wrong while saving. Please try again.',
+            err?.message || 'Something went wrong while saving. Tap card to retry.',
           );
         } finally {
           setSaving(false);
