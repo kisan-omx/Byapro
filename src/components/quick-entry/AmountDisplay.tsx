@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 interface AmountDisplayProps {
   amount: string;
   liveResult?: string;
+  error?: string | null;
 }
 
-export default function AmountDisplay({ amount, liveResult }: AmountDisplayProps) {
+export default function AmountDisplay({ amount, liveResult, error }: AmountDisplayProps) {
   const [cursorVisible, setCursorVisible] = useState(true);
 
   useEffect(() => {
@@ -31,7 +32,9 @@ export default function AmountDisplay({ amount, liveResult }: AmountDisplayProps
 
   return (
     <View className="px-4 py-4 flex-1 bg-surface">
-      <View className="h-[160px] border border-border rounded-2xl justify-end items-end p-6">
+      <View className={`h-[160px] border rounded-2xl justify-end items-end p-6 ${
+        error ? 'border-error' : 'border-border'
+      }`}>
         <View className="flex-row items-center">
           <Text 
             className="text-text font-semibold"
@@ -53,6 +56,9 @@ export default function AmountDisplay({ amount, liveResult }: AmountDisplayProps
           </Text>
         ) : null}
       </View>
+      {!!error && (
+        <Text className="text-error text-sm mt-1 ml-1">{error}</Text>
+      )}
     </View>
   );
 }
