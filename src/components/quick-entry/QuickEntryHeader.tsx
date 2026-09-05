@@ -16,9 +16,6 @@ export default function QuickEntryHeader() {
           <Text className="text-xl font-medium text-text ml-3">Quick Entry</Text>
         </View>
         <View className="flex-row items-center space-x-1">
-          <TouchableOpacity className="p-2">
-            <Ionicons name="information-circle-outline" size={24} color="#475569" />
-          </TouchableOpacity>
           <TouchableOpacity className="p-2 -mr-2">
             <Ionicons name="settings-outline" size={24} color="#475569" />
           </TouchableOpacity>

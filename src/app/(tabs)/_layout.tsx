@@ -42,7 +42,7 @@ export default function TabLayout() {
           paddingHorizontal: 0,
         },
         tabBarButton: (props) => (
-          <TouchableOpacity {...props} activeOpacity={1} />
+          <TouchableOpacity {...(props as any)} activeOpacity={1} />
         ),
       }}
     >
