@@ -71,10 +71,15 @@ export function useQuickEntry() {
     ) => {
       if (isSaving.current) return;
 
-      // ── Business-rule validation (party/category first for UX) ────────
-      if (entryType === 'Payment In' || entryType === 'Payment Out') {
+      if (entryType === 'Payment In') {
         if (!selectedParty) {
-          setValidationError({ field: 'party', message: 'Party is required' });
+          setValidationError({ field: 'party', message: 'Customer is required' });
+          return;
+        }
+      }
+      if (entryType === 'Payment Out') {
+        if (!selectedParty) {
+          setValidationError({ field: 'party', message: 'Supplier is required' });
           return;
         }
       }
@@ -142,6 +147,28 @@ export function useQuickEntry() {
           optimisticInfo = {
             title: 'Expense Recorded',
             message: `Rs. ${amountNum.toLocaleString()} recorded under ${selectedParty!.name}`,
+          };
+          break;
+        }
+
+        case 'Sale Return': {
+          const isCash = !selectedParty;
+          optimisticInfo = {
+            title: 'Sale Return Recorded',
+            message: `Rs. ${amountNum.toLocaleString()} recorded as ${
+              isCash ? 'Cash Sale Return' : `Sale Return (${selectedParty!.name})`
+            }`,
+          };
+          break;
+        }
+
+        case 'Purchase Return': {
+          const isCash = !selectedParty;
+          optimisticInfo = {
+            title: 'Purchase Return Recorded',
+            message: `Rs. ${amountNum.toLocaleString()} recorded as ${
+              isCash ? 'Cash Purchase Return' : `Purchase Return (${selectedParty!.name})`
+            }`,
           };
           break;
         }
@@ -290,6 +317,41 @@ export function useQuickEntry() {
                 categoryId,
                 amount: amountNum,
                 paymentMethod: 'cash',
+              });
+              break;
+            }
+
+            case 'Sale Return': {
+              const isCash = !selectedParty;
+              const paymentType = isCash ? 'cash' : 'credit';
+              const partyId = selectedParty
+                ? await getOrCreateParty(businessId, selectedParty)
+                : null;
+              await recordSale({
+                businessId,
+                partyId,
+                invoiceNumber: generateInvoiceNumber(),
+                totalAmount: amountNum,
+                receivedAmount: isCash ? amountNum : 0,
+                paymentType,
+                note: '[Sale Return]',
+              });
+              break;
+            }
+
+            case 'Purchase Return': {
+              const isCash = !selectedParty;
+              const paymentType = isCash ? 'cash' : 'credit';
+              const partyId = selectedParty
+                ? await getOrCreateParty(businessId, selectedParty)
+                : null;
+              await recordPurchase({
+                businessId,
+                partyId,
+                totalAmount: amountNum,
+                paidAmount: isCash ? amountNum : 0,
+                paymentType,
+                note: '[Purchase Return]',
               });
               break;
             }

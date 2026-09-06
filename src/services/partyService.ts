@@ -41,9 +41,10 @@ export async function getParties({
     .order('id', { ascending: false })
     .range(from, to);
 
-  if (businessId) {
-    query = query.eq('business_id', businessId);
+  if (!businessId) {
+    return { parties: [], hasMore: false };
   }
+  query = query.eq('business_id', businessId);
 
   if (type) {
     query = query.or(`type.eq.${type},type.eq.both`);

@@ -236,10 +236,17 @@ export function useTransactions() {
       if (searchDebounceRef.current) {
         clearTimeout(searchDebounceRef.current);
       }
-      searchDebounceRef.current = setTimeout(() => {
+      if (query.trim() === '') {
+        // Instant restore when clearing search
         setLoading(true);
-        loadInitialData(query, dateFilter, typeFilter);
-      }, 250);
+        loadInitialData('', dateFilter, typeFilter);
+      } else {
+        // Debounce while typing search query
+        searchDebounceRef.current = setTimeout(() => {
+          setLoading(true);
+          loadInitialData(query, dateFilter, typeFilter);
+        }, 250);
+      }
     },
     [loadInitialData, dateFilter, typeFilter],
   );

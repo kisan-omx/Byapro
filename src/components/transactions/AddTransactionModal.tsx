@@ -26,7 +26,7 @@ export default function AddTransactionModal({ visible, onClose }: AddTransaction
     onClose();
     if (option.entryType) {
       router.push({
-        pathname: '/quick-entry',
+        pathname: '/transaction-form',
         params: { type: option.entryType },
       });
     } else if (option.route) {

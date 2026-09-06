@@ -11,29 +11,39 @@ export interface TypeBadgeStyle {
 
 export const TRANSACTION_TYPE_CONFIG: Record<TransactionType, TypeBadgeStyle> = {
   PaymentIn: {
-    label: 'PAYMENT-IN',
-    bgClass: 'bg-emerald-100/90',
+    label: 'Payment In',
+    bgClass: 'bg-emerald-100',
     textClass: 'text-emerald-600',
   },
   Sale: {
-    label: 'SALE',
-    bgClass: 'bg-emerald-100/90',
-    textClass: 'text-emerald-600',
+    label: 'Sale',
+    bgClass: 'bg-primary/10',
+    textClass: 'text-primary',
   },
   Purchase: {
-    label: 'PURCHASE',
+    label: 'Purchase',
     bgClass: 'bg-rose-100',
-    textClass: 'text-rose-700',
+    textClass: 'text-rose-500',
   },
   Expense: {
-    label: 'EXPENSE',
-    bgClass: 'bg-amber-100',
-    textClass: 'text-amber-700',
+    label: 'Expense',
+    bgClass: 'bg-rose-100',
+    textClass: 'text-rose-500',
   },
   PaymentOut: {
-    label: 'PAYMENT-OUT',
-    bgClass: 'bg-orange-100',
-    textClass: 'text-orange-700',
+    label: 'Payment Out',
+    bgClass: 'bg-rose-100',
+    textClass: 'text-rose-500',
+  },
+  SaleReturn: {
+    label: 'Sale Return',
+    bgClass: 'bg-slate-100',
+    textClass: 'text-slate-600',
+  },
+  PurchaseReturn: {
+    label: 'Purchase Return',
+    bgClass: 'bg-slate-100',
+    textClass: 'text-slate-600',
   },
 };
 

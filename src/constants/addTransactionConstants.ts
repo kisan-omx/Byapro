@@ -21,7 +21,7 @@ export const ADD_TRANSACTION_SECTIONS: AddTransactionSection[] = [
         id: 'sale_return',
         label: 'Sale return',
         iconName: 'tag-minus-outline',
-        entryType: 'Sale', // Default entry fallback
+        entryType: 'Sale Return',
       },
     ],
   },
@@ -45,7 +45,7 @@ export const ADD_TRANSACTION_SECTIONS: AddTransactionSection[] = [
         id: 'purchase_return',
         label: 'Purchase return',
         iconName: 'cart-minus',
-        entryType: 'Purchase',
+        entryType: 'Purchase Return',
       },
     ],
   },

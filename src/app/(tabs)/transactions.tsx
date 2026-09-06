@@ -86,15 +86,6 @@ export default function TransactionsScreen() {
               <Text className="text-sm font-medium text-text-secondary text-center px-4 mb-4">
                 You can also create a new transaction from below
               </Text>
-
-              {searchQuery || dateFilter !== 'all' || typeFilter !== 'All' ? (
-                <TouchableOpacity
-                  onPress={resetFilters}
-                  className="px-5 py-2.5 bg-primary/10 rounded-xl border border-primary/20"
-                >
-                  <Text className="text-xs font-bold text-primary">Clear Filters</Text>
-                </TouchableOpacity>
-              ) : null}
             </View>
           ) : (
             <View className="py-12 items-center justify-center">

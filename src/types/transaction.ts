@@ -1,4 +1,11 @@
-export type TransactionType = 'Sale' | 'Purchase' | 'PaymentIn' | 'PaymentOut' | 'Expense';
+export type TransactionType =
+  | 'Sale'
+  | 'Purchase'
+  | 'PaymentIn'
+  | 'PaymentOut'
+  | 'Expense'
+  | 'SaleReturn'
+  | 'PurchaseReturn';
 
 export type PaymentStatus = 'Paid' | 'Unpaid' | 'Partial' | 'N/A';
 

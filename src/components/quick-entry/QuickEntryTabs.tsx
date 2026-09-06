@@ -1,6 +1,13 @@
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 
-export type EntryType = 'Sale' | 'Purchase' | 'Payment In' | 'Payment Out' | 'Expense';
+export type EntryType =
+  | 'Sale'
+  | 'Purchase'
+  | 'Payment In'
+  | 'Payment Out'
+  | 'Expense'
+  | 'Sale Return'
+  | 'Purchase Return';
 
 interface QuickEntryTabsProps {
   selectedTab: EntryType;
