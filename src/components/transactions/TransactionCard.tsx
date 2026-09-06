@@ -23,8 +23,8 @@ export default function TransactionCard({
   onRetry,
 }: TransactionCardProps) {
   const badgeConfig = TRANSACTION_TYPE_CONFIG[item.type] || {
-    label: item.type.toUpperCase(),
-    bgClass: 'bg-emerald-100/90',
+    label: item.type,
+    bgClass: 'bg-emerald-100',
     textClass: 'text-emerald-600',
   };
 
@@ -41,97 +41,97 @@ export default function TransactionCard({
     }
   };
 
+  const renderStatusBadge = () => {
+    if (!item.status || item.status === 'N/A' || item.type === 'PaymentIn' || item.type === 'PaymentOut') {
+      return null;
+    }
+
+    let bgClass = 'bg-emerald-100/90';
+    let textClass = 'text-emerald-700';
+
+    if (item.status === 'Unpaid') {
+      bgClass = 'bg-rose-100/90';
+      textClass = 'text-rose-600';
+    } else if (item.status === 'Partial') {
+      bgClass = 'bg-amber-100/90';
+      textClass = 'text-amber-700';
+    }
+
+    return (
+      <View className={`px-2.5 py-0.5 rounded-md ${bgClass}`}>
+        <Text className={`text-xs font-bold ${textClass}`}>
+          {item.status}
+        </Text>
+      </View>
+    );
+  };
+
+  const typeLabel = `${badgeConfig.label} ${item.indexNo || ''}`.trim();
+  const formattedAmount = (item.totalAmount || 0).toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+
   return (
     <TouchableOpacity
       onPress={() => onPressCard && onPressCard(item)}
+      onLongPress={handleMore}
       activeOpacity={0.8}
-      className={`bg-surface mx-4 mb-3 rounded-2xl p-4 border ${
-        item.syncStatus === 'failed'
-          ? 'border-rose-300'
-          : 'border-border/80'
-      } shadow-sm`}
+      style={{
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.015,
+        shadowRadius: 2,
+        elevation: 0.5,
+      }}
+      className={`bg-surface mx-4 mb-2 rounded-lg py-2 px-3.5 ${
+        item.syncStatus === 'failed' ? 'border border-rose-300' : ''
+      }`}
     >
-      {/* Top Section: Title & Pill Badge on Left, #Index & Date stacked on Right */}
-      <View className="flex-row items-start justify-between mb-3">
-        {/* Left Side: Party Name & Pill Badges */}
-        <View className="flex-1 pr-2">
-          <Text className="text-base font-bold text-slate-700 mb-1.5" numberOfLines={1}>
-            {item.partyName}
-          </Text>
-          <View className="flex-row items-center flex-wrap gap-1.5">
-            {/* Transaction Type Badge */}
-            <View className={`px-3 py-1 rounded-full ${badgeConfig.bgClass}`}>
-              <Text className={`text-[11px] font-extrabold tracking-wider ${badgeConfig.textClass}`}>
-                {badgeConfig.label}
-              </Text>
-            </View>
-
-            {/* Explicit Saving Status Badge */}
-            {item.syncStatus === 'saving' && (
-              <View className="px-2.5 py-1 rounded-full bg-amber-100/90 flex-row items-center gap-x-1">
-                <ActivityIndicator size={10} color="#D97706" />
-                <Text className="text-[10px] font-bold text-amber-700">Saving...</Text>
-              </View>
-            )}
-
-            {/* Explicit Failed & Retry Status Badge */}
-            {item.syncStatus === 'failed' && (
-              <TouchableOpacity
-                onPress={handleRetryPress}
-                className="px-2.5 py-1 rounded-full bg-rose-100/90 flex-row items-center gap-x-1"
-                activeOpacity={0.7}
-              >
-                <Feather name="refresh-cw" size={10} color="#E11D48" />
-                <Text className="text-[10px] font-bold text-rose-700">Failed • Tap to Retry</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        {/* Right Side: #Index on top line, Date on second line */}
-        <View className="items-end">
-          <Text className="text-xs font-semibold text-text-secondary/70 mb-1">
-            {item.indexNo}
-          </Text>
-          <Text className="text-xs font-medium text-text-secondary/70">
-            {item.date}
-          </Text>
-        </View>
+      {/* Row 1: Type + Index on Left, Amount on Right */}
+      <View className="flex-row items-center justify-between mb-0.5">
+        <Text className={`text-sm font-semibold ${badgeConfig.textClass}`} numberOfLines={1}>
+          {typeLabel}
+        </Text>
+        <Text className="text-base font-bold text-slate-800">
+          Rs. {formattedAmount}
+        </Text>
       </View>
 
-      {/* Bottom Section: Total, Unused/Balance, and Bare Action Icons */}
-      <View className="flex-row items-end justify-between pt-1">
-        {/* Total Column */}
-        <View className="flex-1 pr-2">
-          <Text className="text-xs font-medium text-text-secondary" numberOfLines={1}>Total</Text>
-          <Text
-            className="text-base font-bold text-slate-700 mt-0.5"
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.75}
-          >
-            Rs {(item.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </Text>
-        </View>
+      {/* Row 2: Party Name on Left, Status Badge in Vertical Center Right */}
+      <View className="flex-row items-center justify-between mb-0.5 min-h-[22px]">
+        <Text className="text-base font-bold text-slate-900 flex-1 pr-2" numberOfLines={1}>
+          {item.partyName || 'Cash Sale'}
+        </Text>
+        {renderStatusBadge()}
+      </View>
 
-        {/* Secondary (Unused/Balance) Column */}
-        <View className="flex-1 pr-2">
-          <Text className="text-xs font-medium text-text-secondary" numberOfLines={1}>{item.secondaryLabel}</Text>
-          <Text
-            className="text-base font-bold text-slate-700 mt-0.5"
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.75}
-          >
-            Rs {(item.secondaryAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      {/* Row 3: Date on Left & Sync Status */}
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
+          <Text className="text-xs font-medium text-slate-400">
+            {item.date}
           </Text>
-        </View>
 
-        {/* Action Icon (3 Dots) */}
-        <View className="flex-row items-center pr-1">
-          <TouchableOpacity onPress={handleMore} className="p-1">
-            <Feather name="more-vertical" size={22} color="#808EA5" />
-          </TouchableOpacity>
+          {/* Saving Indicator */}
+          {item.syncStatus === 'saving' && (
+            <View className="px-2 py-0.5 rounded-md bg-amber-100 flex-row items-center gap-x-1">
+              <ActivityIndicator size={10} color="#D97706" />
+              <Text className="text-[10px] font-bold text-amber-700">Saving...</Text>
+            </View>
+          )}
+
+          {/* Failed / Retry Indicator */}
+          {item.syncStatus === 'failed' && (
+            <TouchableOpacity
+              onPress={handleRetryPress}
+              className="px-2 py-0.5 rounded-md bg-rose-100 flex-row items-center gap-x-1"
+              activeOpacity={0.7}
+            >
+              <Feather name="refresh-cw" size={10} color="#E11D48" />
+              <Text className="text-[10px] font-bold text-rose-700">Failed • Retry</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </TouchableOpacity>

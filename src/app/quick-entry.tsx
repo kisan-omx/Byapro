@@ -143,6 +143,7 @@ export default function QuickEntryScreen() {
         }
         if (!expr) return currentAmount;
         const result = new Function('return ' + expr)();
+        if (typeof result !== 'number' || isNaN(result) || !isFinite(result)) return currentAmount;
         return Number.isInteger(result)
           ? result.toString()
           : parseFloat(result.toFixed(4)).toString();
