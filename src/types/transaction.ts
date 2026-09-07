@@ -5,7 +5,8 @@ export type TransactionType =
   | 'PaymentOut'
   | 'Expense'
   | 'SaleReturn'
-  | 'PurchaseReturn';
+  | 'PurchaseReturn'
+  | 'Quotation';
 
 export type PaymentStatus = 'Paid' | 'Unpaid' | 'Partial' | 'N/A';
 
@@ -28,7 +29,15 @@ export interface TransactionItem {
   payload?: any; // Retained payload for retry capability
 }
 
-export type DateFilterType = 'all' | 'today' | 'yesterday' | 'this_month' | 'this_year';
+export type DateFilterType =
+  | 'today'
+  | 'yesterday'
+  | 'this_week'
+  | 'this_month'
+  | 'last_month'
+  | 'this_fiscal_year'
+  | 'this_year'
+  | 'all';
 
 export interface TransactionFilter {
   searchQuery: string;

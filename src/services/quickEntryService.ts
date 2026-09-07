@@ -82,24 +82,59 @@ export async function getOrCreateExpenseCategory(
   return created.id;
 }
 
+export interface TransactionLineItem {
+  itemId?: string;
+  itemName: string;
+  quantity: number;
+  unitPrice: number;
+  discount?: number;
+  totalAmount: number;
+}
 
 export interface SalePayload {
   businessId: string;
   partyId: string | null;       // null = cash sale
-  invoiceNumber: string;
+  invoiceNumber?: string;
   totalAmount: number;
   receivedAmount: number;
   paymentType: 'cash' | 'credit' | 'partial';
   note?: string;
+  items?: TransactionLineItem[];
 }
 
 export interface PurchasePayload {
   businessId: string;
   partyId: string | null;
+  invoiceNumber?: string;
   totalAmount: number;
   paidAmount: number;
   paymentType: 'cash' | 'credit' | 'partial';
   note?: string;
+  items?: TransactionLineItem[];
+}
+
+export interface SaleReturnPayload {
+  businessId: string;
+  saleId?: string | null;
+  partyId: string | null;
+  returnNumber?: string;
+  totalAmount: number;
+  refundedAmount: number;
+  paymentType: 'cash' | 'credit' | 'partial';
+  note?: string;
+  items?: TransactionLineItem[];
+}
+
+export interface PurchaseReturnPayload {
+  businessId: string;
+  purchaseId?: string | null;
+  partyId: string | null;
+  returnNumber?: string;
+  totalAmount: number;
+  refundedAmount: number;
+  paymentType: 'cash' | 'credit' | 'partial';
+  note?: string;
+  items?: TransactionLineItem[];
 }
 
 export interface PaymentInPayload {
@@ -131,62 +166,128 @@ function generateInvoiceNumber(): string {
   return `INV-${Date.now()}`;
 }
 
-export async function recordSale(payload: SalePayload): Promise<void> {
-  const { error } = await supabase.from('sales').insert({
-    business_id: payload.businessId,
-    party_id: payload.partyId,
-    invoice_number: payload.invoiceNumber,
-    total_amount: payload.totalAmount,
-    received_amount: payload.receivedAmount,
-    payment_type: payload.paymentType,
-    note: payload.note ?? null,
+export async function recordSale(payload: SalePayload): Promise<string> {
+  const { data, error } = await supabase.rpc('record_sale_transaction', {
+    p_business_id: payload.businessId,
+    p_party_id: payload.partyId,
+    p_invoice_number: payload.invoiceNumber ?? null,
+    p_total_amount: payload.totalAmount,
+    p_received_amount: payload.receivedAmount,
+    p_payment_type: payload.paymentType,
+    p_note: payload.note ?? null,
+    p_items: (payload.items || []).map((i) => ({
+      item_id: i.itemId ?? null,
+      item_name: i.itemName,
+      quantity: i.quantity,
+      unit_price: i.unitPrice,
+      discount: i.discount ?? 0,
+      total_amount: i.totalAmount,
+    })),
   });
   if (error) throw error;
+  return data;
 }
 
-export async function recordPurchase(payload: PurchasePayload): Promise<void> {
-  const { error } = await supabase.from('purchases').insert({
-    business_id: payload.businessId,
-    party_id: payload.partyId,
-    total_amount: payload.totalAmount,
-    paid_amount: payload.paidAmount,
-    payment_type: payload.paymentType,
-    note: payload.note ?? null,
+export async function recordPurchase(payload: PurchasePayload): Promise<string> {
+  const { data, error } = await supabase.rpc('record_purchase_transaction', {
+    p_business_id: payload.businessId,
+    p_party_id: payload.partyId,
+    p_invoice_number: payload.invoiceNumber ?? null,
+    p_total_amount: payload.totalAmount,
+    p_paid_amount: payload.paidAmount,
+    p_payment_type: payload.paymentType,
+    p_note: payload.note ?? null,
+    p_items: (payload.items || []).map((i) => ({
+      item_id: i.itemId ?? null,
+      item_name: i.itemName,
+      quantity: i.quantity,
+      unit_price: i.unitPrice,
+      discount: i.discount ?? 0,
+      total_amount: i.totalAmount,
+    })),
   });
   if (error) throw error;
+  return data;
 }
 
-export async function recordPaymentIn(payload: PaymentInPayload): Promise<void> {
-  const { error } = await supabase.from('payment_in').insert({
-    business_id: payload.businessId,
-    party_id: payload.partyId,
-    amount: payload.amount,
-    payment_method: payload.paymentMethod,
-    note: payload.note ?? null,
+export async function recordSaleReturn(payload: SaleReturnPayload): Promise<string> {
+  const { data, error } = await supabase.rpc('record_sale_return_transaction', {
+    p_business_id: payload.businessId,
+    p_sale_id: payload.saleId ?? null,
+    p_party_id: payload.partyId,
+    p_return_number: payload.returnNumber ?? null,
+    p_total_amount: payload.totalAmount,
+    p_refunded_amount: payload.refundedAmount,
+    p_payment_type: payload.paymentType,
+    p_note: payload.note ?? null,
+    p_items: (payload.items || []).map((i) => ({
+      item_id: i.itemId ?? null,
+      item_name: i.itemName,
+      quantity: i.quantity,
+      unit_price: i.unitPrice,
+      total_amount: i.totalAmount,
+    })),
   });
   if (error) throw error;
+  return data;
 }
 
-export async function recordPaymentOut(payload: PaymentOutPayload): Promise<void> {
-  const { error } = await supabase.from('payment_out').insert({
-    business_id: payload.businessId,
-    party_id: payload.partyId,
-    amount: payload.amount,
-    payment_method: payload.paymentMethod,
-    note: payload.note ?? null,
+export async function recordPurchaseReturn(payload: PurchaseReturnPayload): Promise<string> {
+  const { data, error } = await supabase.rpc('record_purchase_return_transaction', {
+    p_business_id: payload.businessId,
+    p_purchase_id: payload.purchaseId ?? null,
+    p_party_id: payload.partyId,
+    p_return_number: payload.returnNumber ?? null,
+    p_total_amount: payload.totalAmount,
+    p_refunded_amount: payload.refundedAmount,
+    p_payment_type: payload.paymentType,
+    p_note: payload.note ?? null,
+    p_items: (payload.items || []).map((i) => ({
+      item_id: i.itemId ?? null,
+      item_name: i.itemName,
+      quantity: i.quantity,
+      unit_price: i.unitPrice,
+      total_amount: i.totalAmount,
+    })),
   });
   if (error) throw error;
+  return data;
 }
 
-export async function recordExpense(payload: ExpensePayload): Promise<void> {
-  const { error } = await supabase.from('expenses').insert({
-    business_id: payload.businessId,
-    category_id: payload.categoryId,
-    amount: payload.amount,
-    payment_method: payload.paymentMethod,
-    note: payload.note ?? null,
+export async function recordPaymentIn(payload: PaymentInPayload): Promise<string> {
+  const { data, error } = await supabase.rpc('record_payment_in_transaction', {
+    p_business_id: payload.businessId,
+    p_party_id: payload.partyId,
+    p_amount: payload.amount,
+    p_payment_method: payload.paymentMethod,
+    p_note: payload.note ?? null,
   });
   if (error) throw error;
+  return data;
+}
+
+export async function recordPaymentOut(payload: PaymentOutPayload): Promise<string> {
+  const { data, error } = await supabase.rpc('record_payment_out_transaction', {
+    p_business_id: payload.businessId,
+    p_party_id: payload.partyId,
+    p_amount: payload.amount,
+    p_payment_method: payload.paymentMethod,
+    p_note: payload.note ?? null,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function recordExpense(payload: ExpensePayload): Promise<string> {
+  const { data, error } = await supabase.rpc('record_expense_transaction', {
+    p_business_id: payload.businessId,
+    p_category_id: payload.categoryId,
+    p_amount: payload.amount,
+    p_payment_method: payload.paymentMethod,
+    p_note: payload.note ?? null,
+  });
+  if (error) throw error;
+  return data;
 }
 
 export { generateInvoiceNumber };
