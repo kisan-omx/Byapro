@@ -17,11 +17,15 @@ import TransactionCard from '../../components/transactions/TransactionCard';
 import TransactionFloatingActions from '../../components/transactions/TransactionFloatingActions';
 import DateFilterModal from '../../components/transactions/DateFilterModal';
 import AddTransactionModal from '../../components/transactions/AddTransactionModal';
+import SelectDateModal from '../../components/common/SelectDateModal';
+import SelectTypeModal from '../../components/common/SelectTypeModal';
 import { useTransactions } from '../../hooks/useTransactions';
 
 export default function TransactionsScreen() {
   const router = useRouter();
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+  const [isSelectDateModalVisible, setIsSelectDateModalVisible] = useState(false);
+  const [isSelectTypeModalVisible, setIsSelectTypeModalVisible] = useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
 
   const {
@@ -48,7 +52,7 @@ export default function TransactionsScreen() {
         onOpenSettings={() => setIsFilterModalVisible(true)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        onOpenTypeFilter={() => setIsFilterModalVisible(true)}
+        onOpenTypeFilter={() => setIsSelectTypeModalVisible(true)}
       />
 
       {/* Main Transactions List */}
@@ -66,7 +70,7 @@ export default function TransactionsScreen() {
         ListHeaderComponent={
           <TransactionDateFilter
             dateFilter={dateFilter}
-            onOpenDateFilter={() => setIsFilterModalVisible(true)}
+            onOpenDateFilter={() => setIsSelectDateModalVisible(true)}
           />
         }
         ListFooterComponent={
@@ -119,7 +123,23 @@ export default function TransactionsScreen() {
         onClose={() => setIsAddModalVisible(false)}
       />
 
-      {/* Date & Type Filter Modal */}
+      {/* Reusable Select Date Modal */}
+      <SelectDateModal
+        visible={isSelectDateModalVisible}
+        onClose={() => setIsSelectDateModalVisible(false)}
+        selectedDateFilter={dateFilter}
+        onSelectDateFilter={setDateFilter}
+      />
+
+      {/* Reusable Select Type Modal */}
+      <SelectTypeModal
+        visible={isSelectTypeModalVisible}
+        onClose={() => setIsSelectTypeModalVisible(false)}
+        selectedTypeFilter={typeFilter}
+        onSelectTypeFilter={setTypeFilter}
+      />
+
+      {/* Combined Date & Type Filter Modal */}
       <DateFilterModal
         visible={isFilterModalVisible}
         onClose={() => setIsFilterModalVisible(false)}

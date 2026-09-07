@@ -6,6 +6,8 @@ import {
   generateInvoiceNumber,
   recordSale,
   recordPurchase,
+  recordSaleReturn,
+  recordPurchaseReturn,
   recordPaymentIn,
   recordPaymentOut,
   recordExpense,
@@ -16,6 +18,7 @@ import { Party } from '../components/quick-entry/PartySelectionModal';
 import { EntryType } from '../components/quick-entry/QuickEntryTabs';
 
 import { transactionEvents } from '../services/transactionEvents';
+import { fetchSingleTransaction } from '../services/transactionService';
 import { TransactionItem, TransactionType } from '../types/transaction';
 
 export interface SuccessInfo {
@@ -211,6 +214,16 @@ export function useQuickEntry() {
         partyName = selectedParty ? selectedParty.name : 'General Expense';
         secondaryLabel = 'Unused';
         secondaryAmount = amountNum;
+      } else if (entryType === 'Sale Return') {
+        optimisticType = 'SaleReturn';
+        partyName = selectedParty ? selectedParty.name : 'Cash Return';
+        secondaryLabel = 'Balance';
+        secondaryAmount = selectedParty ? amountNum : 0;
+      } else if (entryType === 'Purchase Return') {
+        optimisticType = 'PurchaseReturn';
+        partyName = selectedParty ? selectedParty.name : 'Cash Return';
+        secondaryLabel = 'Balance';
+        secondaryAmount = selectedParty ? amountNum : 0;
       }
 
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -220,7 +233,7 @@ export function useQuickEntry() {
       const optimisticItem: TransactionItem = {
         id: tempId,
         type: optimisticType,
-        indexNo: '#1',
+        indexNo: '#...',
         partyName,
         totalAmount: amountNum,
         secondaryAmount,
@@ -254,6 +267,8 @@ export function useQuickEntry() {
             throw new Error('Could not find your business. Please complete setup.');
           }
 
+          let createdId: string | null = null;
+
           switch (entryType) {
             case 'Sale': {
               const isCash = !selectedParty;
@@ -261,10 +276,9 @@ export function useQuickEntry() {
               const partyId = selectedParty
                 ? await getOrCreateParty(businessId, selectedParty)
                 : null;
-              await recordSale({
+              createdId = await recordSale({
                 businessId,
                 partyId,
-                invoiceNumber: generateInvoiceNumber(),
                 totalAmount: amountNum,
                 receivedAmount: isCash ? amountNum : 0,
                 paymentType,
@@ -278,7 +292,7 @@ export function useQuickEntry() {
               const partyId = selectedParty
                 ? await getOrCreateParty(businessId, selectedParty)
                 : null;
-              await recordPurchase({
+              createdId = await recordPurchase({
                 businessId,
                 partyId,
                 totalAmount: amountNum,
@@ -290,7 +304,7 @@ export function useQuickEntry() {
 
             case 'Payment In': {
               const partyId = await getOrCreateParty(businessId, selectedParty!);
-              await recordPaymentIn({
+              createdId = await recordPaymentIn({
                 businessId,
                 partyId,
                 amount: amountNum,
@@ -301,7 +315,7 @@ export function useQuickEntry() {
 
             case 'Payment Out': {
               const partyId = await getOrCreateParty(businessId, selectedParty!);
-              await recordPaymentOut({
+              createdId = await recordPaymentOut({
                 businessId,
                 partyId,
                 amount: amountNum,
@@ -312,7 +326,7 @@ export function useQuickEntry() {
 
             case 'Expense': {
               const categoryId = await getOrCreateExpenseCategory(businessId, selectedParty!.name);
-              await recordExpense({
+              createdId = await recordExpense({
                 businessId,
                 categoryId,
                 amount: amountNum,
@@ -327,14 +341,12 @@ export function useQuickEntry() {
               const partyId = selectedParty
                 ? await getOrCreateParty(businessId, selectedParty)
                 : null;
-              await recordSale({
+              createdId = await recordSaleReturn({
                 businessId,
                 partyId,
-                invoiceNumber: generateInvoiceNumber(),
                 totalAmount: amountNum,
-                receivedAmount: isCash ? amountNum : 0,
+                refundedAmount: isCash ? amountNum : 0,
                 paymentType,
-                note: '[Sale Return]',
               });
               break;
             }
@@ -345,20 +357,25 @@ export function useQuickEntry() {
               const partyId = selectedParty
                 ? await getOrCreateParty(businessId, selectedParty)
                 : null;
-              await recordPurchase({
+              createdId = await recordPurchaseReturn({
                 businessId,
                 partyId,
                 totalAmount: amountNum,
-                paidAmount: isCash ? amountNum : 0,
+                refundedAmount: isCash ? amountNum : 0,
                 paymentType,
-                note: '[Purchase Return]',
               });
               break;
             }
           }
 
-          // Emit saved event -> transitions card from 'saving' to 'saved'
-          transactionEvents.emitSaved(tempId);
+          // Fetch authoritative server record from unified_transactions view
+          let realItem: TransactionItem | null = null;
+          if (createdId) {
+            realItem = await fetchSingleTransaction(businessId, createdId, optimisticType);
+          }
+
+          // Emit saved event with realItem -> replaces optimistic item with authoritative record from server!
+          transactionEvents.emitSaved(tempId, realItem || undefined);
         } catch (err: any) {
           console.error('Quick entry background save error:', err);
           // Transition card to 'failed' state with retry option

@@ -2,264 +2,155 @@ import { supabase } from '../lib/supabase';
 import { getBusinessId } from './quickEntryService';
 import { DateFilterType, TransactionItem, TransactionType } from '../types/transaction';
 import { PAGE_SIZE } from '../constants/transactionConstants';
-import { getDateFilterBoundary } from '../utils/dateUtils';
-import {
-  mapSalesToItems,
-  mapPurchasesToItems,
-  mapPaymentInToItems,
-  mapPaymentOutToItems,
-  mapExpensesToItems,
-} from '../utils/transactionMappers';
+import { getDateFilterBoundaries, formatDate } from '../utils/dateUtils';
+
+export interface TransactionCursor {
+  lastCreatedAt: string;
+  lastId: string;
+}
 
 export interface FetchTransactionsParams {
   firebaseUid: string;
-  page?: number; // 0-indexed page number
+  cursor?: TransactionCursor;
   searchQuery?: string;
   dateFilter?: DateFilterType;
   typeFilter?: TransactionType | 'All';
+  limit?: number;
 }
 
 export async function fetchTransactions({
   firebaseUid,
-  page = 0,
+  cursor,
   searchQuery = '',
   dateFilter = 'all',
   typeFilter = 'All',
-}: FetchTransactionsParams): Promise<{ items: TransactionItem[]; hasMore: boolean }> {
+  limit = PAGE_SIZE,
+}: FetchTransactionsParams): Promise<{ items: TransactionItem[]; nextCursor?: TransactionCursor; hasMore: boolean }> {
   const businessId = await getBusinessId(firebaseUid);
   if (!businessId) {
     return { items: [], hasMore: false };
   }
 
-  // Determine date boundary if dateFilter is active
-  const startDateIso = getDateFilterBoundary(dateFilter);
+  // Determine date boundaries if dateFilter is active
+  const { startDateIso, endDateIso } = getDateFilterBoundaries(dateFilter);
 
-  // Calculate fetch range for combined records
-  const fetchLimit = (page + 1) * PAGE_SIZE + 1;
+  // Fetch limit (+1 to determine hasMore)
+  const fetchLimit = limit + 1;
 
-  // Pre-query matching party IDs & expense category IDs for DB-side search
+  let q = supabase
+    .from('unified_transactions')
+    .select('id, raw_id, business_id, party_id, party_name, type, index_no, total_amount, secondary_amount, secondary_label, status, note, payment_method, created_at')
+    .eq('business_id', businessId)
+    .order('created_at', { ascending: false })
+    .order('raw_id', { ascending: false })
+    .limit(fetchLimit);
+
+  if (typeFilter !== 'All') {
+    q = q.eq('type', typeFilter);
+  }
+
+  if (startDateIso) q = q.gte('created_at', startDateIso);
+  if (endDateIso) q = q.lt('created_at', endDateIso);
+
+  if (cursor?.lastCreatedAt) {
+    q = q.lte('created_at', cursor.lastCreatedAt);
+  }
+
   const cleanQuery = searchQuery.trim();
-  let matchingPartyIds: string[] = [];
-  let matchingCategoryIds: string[] = [];
-
   if (cleanQuery) {
-    const [partyRes, catRes] = await Promise.all([
-      supabase
-        .from('parties')
-        .select('id')
-        .eq('business_id', businessId)
-        .ilike('name', `%${cleanQuery}%`),
-      supabase
-        .from('expense_categories')
-        .select('id')
-        .eq('business_id', businessId)
-        .ilike('name', `%${cleanQuery}%`),
-    ]);
-
-    matchingPartyIds = (partyRes.data || []).map((p) => p.id);
-    matchingCategoryIds = (catRes.data || []).map((c) => c.id);
+    q = q.or(`party_name.ilike.%${cleanQuery}%,note.ilike.%${cleanQuery}%,index_no.ilike.%${cleanQuery}%`);
   }
 
-  // 1. Query sales
-  const fetchSales = async (): Promise<{ data: any[] }> => {
-    if (typeFilter !== 'All' && typeFilter !== 'Sale') return { data: [] };
-    let q = supabase
-      .from('sales')
-      .select('id, party_id, invoice_number, total_amount, received_amount, payment_type, created_at, note')
-      .eq('business_id', businessId)
-      .order('created_at', { ascending: false })
-      .order('id', { ascending: false })
-      .limit(fetchLimit);
+  const { data, error } = await q;
 
-    if (startDateIso) q = q.gte('created_at', startDateIso);
-
-    if (cleanQuery) {
-      const filters: string[] = [`note.ilike.%${cleanQuery}%`];
-      if (matchingPartyIds.length > 0) {
-        filters.push(`party_id.in.(${matchingPartyIds.join(',')})`);
-      }
-      q = q.or(filters.join(','));
-    }
-
-    const res = await q;
-    return { data: res.data || [] };
-  };
-
-  // 2. Query purchases
-  const fetchPurchases = async (): Promise<{ data: any[] }> => {
-    if (typeFilter !== 'All' && typeFilter !== 'Purchase') return { data: [] };
-    let q = supabase
-      .from('purchases')
-      .select('id, party_id, total_amount, paid_amount, payment_type, created_at, note')
-      .eq('business_id', businessId)
-      .order('created_at', { ascending: false })
-      .order('id', { ascending: false })
-      .limit(fetchLimit);
-
-    if (startDateIso) q = q.gte('created_at', startDateIso);
-
-    if (cleanQuery) {
-      const filters: string[] = [`note.ilike.%${cleanQuery}%`];
-      if (matchingPartyIds.length > 0) {
-        filters.push(`party_id.in.(${matchingPartyIds.join(',')})`);
-      }
-      q = q.or(filters.join(','));
-    }
-
-    const res = await q;
-    return { data: res.data || [] };
-  };
-
-  // 3. Query payment_in
-  const fetchPaymentIn = async (): Promise<{ data: any[] }> => {
-    if (typeFilter !== 'All' && typeFilter !== 'PaymentIn') return { data: [] };
-    let q = supabase
-      .from('payment_in')
-      .select('id, party_id, amount, payment_method, created_at, note')
-      .eq('business_id', businessId)
-      .order('created_at', { ascending: false })
-      .order('id', { ascending: false })
-      .limit(fetchLimit);
-
-    if (startDateIso) q = q.gte('created_at', startDateIso);
-
-    if (cleanQuery) {
-      const filters: string[] = [`note.ilike.%${cleanQuery}%`];
-      if (matchingPartyIds.length > 0) {
-        filters.push(`party_id.in.(${matchingPartyIds.join(',')})`);
-      }
-      q = q.or(filters.join(','));
-    }
-
-    const res = await q;
-    return { data: res.data || [] };
-  };
-
-  // 4. Query payment_out
-  const fetchPaymentOut = async (): Promise<{ data: any[] }> => {
-    if (typeFilter !== 'All' && typeFilter !== 'PaymentOut') return { data: [] };
-    let q = supabase
-      .from('payment_out')
-      .select('id, party_id, amount, payment_method, created_at, note')
-      .eq('business_id', businessId)
-      .order('created_at', { ascending: false })
-      .order('id', { ascending: false })
-      .limit(fetchLimit);
-
-    if (startDateIso) q = q.gte('created_at', startDateIso);
-
-    if (cleanQuery) {
-      const filters: string[] = [`note.ilike.%${cleanQuery}%`];
-      if (matchingPartyIds.length > 0) {
-        filters.push(`party_id.in.(${matchingPartyIds.join(',')})`);
-      }
-      q = q.or(filters.join(','));
-    }
-
-    const res = await q;
-    return { data: res.data || [] };
-  };
-
-  // 5. Query expenses
-  const fetchExpenses = async (): Promise<{ data: any[] }> => {
-    if (typeFilter !== 'All' && typeFilter !== 'Expense') return { data: [] };
-    let q = supabase
-      .from('expenses')
-      .select('id, category_id, amount, payment_method, created_at, note')
-      .eq('business_id', businessId)
-      .order('created_at', { ascending: false })
-      .order('id', { ascending: false })
-      .limit(fetchLimit);
-
-    if (startDateIso) q = q.gte('created_at', startDateIso);
-
-    if (cleanQuery) {
-      const filters: string[] = [`note.ilike.%${cleanQuery}%`];
-      if (matchingCategoryIds.length > 0) {
-        filters.push(`category_id.in.(${matchingCategoryIds.join(',')})`);
-      }
-      q = q.or(filters.join(','));
-    }
-
-    const res = await q;
-    return { data: res.data || [] };
-  };
-
-  const [salesRes, purchasesRes, paymentInRes, paymentOutRes, expensesRes] = await Promise.all([
-    fetchSales(),
-    fetchPurchases(),
-    fetchPaymentIn(),
-    fetchPaymentOut(),
-    fetchExpenses(),
-  ]);
-
-  // Collect unique party IDs & expense category IDs for single batched lookups (avoid N+1 queries)
-  const partyIds = new Set<string>();
-  const categoryIds = new Set<string>();
-
-  (salesRes.data || []).forEach((s) => s.party_id && partyIds.add(s.party_id));
-  (purchasesRes.data || []).forEach((p) => p.party_id && partyIds.add(p.party_id));
-  (paymentInRes.data || []).forEach((pi) => pi.party_id && partyIds.add(pi.party_id));
-  (paymentOutRes.data || []).forEach((po) => po.party_id && partyIds.add(po.party_id));
-  (expensesRes.data || []).forEach((e) => e.category_id && categoryIds.add(e.category_id));
-
-  // Batch query party names
-  const partyMap = new Map<string, string>();
-  if (partyIds.size > 0) {
-    const { data: parties } = await supabase
-      .from('parties')
-      .select('id, name')
-      .in('id', Array.from(partyIds));
-
-    (parties || []).forEach((party) => partyMap.set(party.id, party.name));
+  if (error || !data) {
+    console.error('Error querying unified_transactions view:', error);
+    return { items: [], hasMore: false };
   }
 
-  // Batch query category names
-  const categoryMap = new Map<string, string>();
-  if (categoryIds.size > 0) {
-    const { data: categories } = await supabase
-      .from('expense_categories')
-      .select('id, name')
-      .in('id', Array.from(categoryIds));
-
-    (categories || []).forEach((cat) => categoryMap.set(cat.id, cat.name));
+  // Apply keyset cursor filtering if cursor provided
+  let filteredData = data;
+  if (cursor) {
+    const cursorTime = new Date(cursor.lastCreatedAt).getTime();
+    filteredData = data.filter((row) => {
+      const itemTime = new Date(row.created_at).getTime();
+      if (itemTime < cursorTime) return true;
+      if (itemTime === cursorTime) return String(row.raw_id).localeCompare(cursor.lastId) < 0;
+      return false;
+    });
   }
 
-  // Map into unified TransactionItem list
-  const allItems: TransactionItem[] = [
-    ...mapSalesToItems(salesRes.data || [], partyMap),
-    ...mapPurchasesToItems(purchasesRes.data || [], partyMap),
-    ...mapPaymentInToItems(paymentInRes.data || [], partyMap),
-    ...mapPaymentOutToItems(paymentOutRes.data || [], partyMap),
-    ...mapExpensesToItems(expensesRes.data || [], categoryMap),
-  ];
+  const hasMore = filteredData.length > limit;
+  const pageSlice = filteredData.slice(0, limit);
 
-  // Sort unified items strictly descending by date & ID (stable ordering rule 8)
-  allItems.sort((a, b) => {
-    const timeDiff = new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime();
-    if (timeDiff !== 0) return timeDiff;
-    return b.id.localeCompare(a.id);
-  });
+  const items: TransactionItem[] = pageSlice.map((row) => ({
+    id: row.id,
+    type: row.type as TransactionType,
+    indexNo: row.index_no,
+    partyName: row.party_name,
+    totalAmount: Number(row.total_amount || 0),
+    secondaryAmount: Number(row.secondary_amount || 0),
+    secondaryLabel: row.secondary_label,
+    status: row.status,
+    date: formatDate(row.created_at),
+    rawDate: row.created_at,
+    note: row.note,
+    paymentMethod: row.payment_method,
+  }));
 
-  // Filter by searchQuery if specified
-  let filteredItems = allItems;
-  if (cleanQuery) {
-    const query = cleanQuery.toLowerCase();
-    filteredItems = allItems.filter(
-      (item) =>
-        item.partyName.toLowerCase().includes(query) ||
-        item.indexNo.toLowerCase().includes(query) ||
-        (item.note && item.note.toLowerCase().includes(query)),
-    );
-  }
-
-  // Pagination slice
-  const startIndex = page * PAGE_SIZE;
-  const pageItems = filteredItems.slice(startIndex, startIndex + PAGE_SIZE);
-  const hasMore = filteredItems.length > startIndex + PAGE_SIZE;
+  const lastItem = items[items.length - 1];
+  const nextCursor: TransactionCursor | undefined = lastItem
+    ? { lastCreatedAt: lastItem.rawDate, lastId: lastItem.id.replace(/^(sale|purchase|pi|po|exp|sr|pr)-/, '') }
+    : undefined;
 
   return {
-    items: pageItems,
+    items,
+    nextCursor,
     hasMore,
   };
 }
+
+export async function fetchSingleTransaction(
+  businessId: string,
+  rawId: string,
+  type: TransactionType,
+): Promise<TransactionItem | null> {
+  const prefixMap: Record<TransactionType, string> = {
+    Sale: 'sale-',
+    Purchase: 'purchase-',
+    PaymentIn: 'pi-',
+    PaymentOut: 'po-',
+    Expense: 'exp-',
+    SaleReturn: 'sr-',
+    PurchaseReturn: 'pr-',
+    Quotation: 'q-',
+  };
+  const prefix = prefixMap[type] || '';
+  const targetId = `${prefix}${rawId}`;
+
+  const { data, error } = await supabase
+    .from('unified_transactions')
+    .select('id, raw_id, business_id, party_id, party_name, type, index_no, total_amount, secondary_amount, secondary_label, status, note, payment_method, created_at')
+    .eq('business_id', businessId)
+    .eq('id', targetId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id,
+    type: data.type as TransactionType,
+    indexNo: data.index_no,
+    partyName: data.party_name,
+    totalAmount: Number(data.total_amount || 0),
+    secondaryAmount: Number(data.secondary_amount || 0),
+    secondaryLabel: data.secondary_label,
+    status: data.status,
+    date: formatDate(data.created_at),
+    rawDate: data.created_at,
+    note: data.note,
+    paymentMethod: data.payment_method,
+    syncStatus: 'saved',
+  };
+}
+

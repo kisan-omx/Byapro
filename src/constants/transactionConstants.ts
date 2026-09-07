@@ -37,22 +37,52 @@ export const TRANSACTION_TYPE_CONFIG: Record<TransactionType, TypeBadgeStyle> = 
   },
   SaleReturn: {
     label: 'Sale Return',
-    bgClass: 'bg-slate-100',
-    textClass: 'text-slate-600',
+    bgClass: 'bg-emerald-100',
+    textClass: 'text-emerald-600',
   },
   PurchaseReturn: {
     label: 'Purchase Return',
-    bgClass: 'bg-slate-100',
-    textClass: 'text-slate-600',
+    bgClass: 'bg-rose-100',
+    textClass: 'text-rose-500',
+  },
+  Quotation: {
+    label: 'Quotation',
+    bgClass: 'bg-amber-100',
+    textClass: 'text-amber-600',
   },
 };
 
-export const DATE_FILTER_OPTIONS: { id: DateFilterType; label: string }[] = [
-  { id: 'all', label: 'All Time' },
+export interface TypeFilterOption {
+  id: TransactionType | 'All';
+  label: string;
+}
+
+export const TRANSACTION_TYPE_OPTIONS: TypeFilterOption[] = [
+  { id: 'All', label: 'All Transactions' },
+  { id: 'Sale', label: 'Sale' },
+  { id: 'SaleReturn', label: 'Sales Return' },
+  { id: 'PaymentIn', label: 'Payment In' },
+  { id: 'PaymentOut', label: 'Payment Out' },
+  { id: 'Purchase', label: 'Purchase' },
+  { id: 'PurchaseReturn', label: 'Purchase Return' },
+  { id: 'Expense', label: 'Expense' },
+];
+
+export interface DateFilterOption {
+  id: DateFilterType;
+  label: string;
+  defaultSubtitle?: string;
+}
+
+export const DATE_FILTER_OPTIONS: DateFilterOption[] = [
   { id: 'today', label: 'Today' },
   { id: 'yesterday', label: 'Yesterday' },
+  { id: 'this_week', label: 'This Week' },
   { id: 'this_month', label: 'This Month' },
+  { id: 'last_month', label: 'Last Month' },
+  { id: 'this_fiscal_year', label: 'This Fiscal Year' },
   { id: 'this_year', label: 'This Year' },
+  { id: 'all', label: 'All Time', defaultSubtitle: 'See Transactions of all time' },
 ];
 
 export interface QuickLinkItem {

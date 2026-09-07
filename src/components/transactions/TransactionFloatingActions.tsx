@@ -15,7 +15,7 @@ export default function TransactionFloatingActions({ onOpenAddModal }: Transacti
       <View className="flex-row items-center justify-center gap-x-3.5 bg-transparent">
         {/* Payment In Pill Button */}
         <TouchableOpacity
-          onPress={() => router.push({ pathname: '/quick-entry', params: { type: 'Payment In' } })}
+          onPress={() => router.push({ pathname: '/transaction-form', params: { type: 'Payment In' } })}
           className="flex-row items-center bg-emerald-500 px-5 py-3.5 rounded-full shadow-lg"
           activeOpacity={0.85}
         >
@@ -25,7 +25,7 @@ export default function TransactionFloatingActions({ onOpenAddModal }: Transacti
 
         {/* Floating Plus Button */}
         <TouchableOpacity
-          onPress={() => (onOpenAddModal ? onOpenAddModal() : router.push('/quick-entry'))}
+          onPress={() => (onOpenAddModal ? onOpenAddModal() : router.push('/transaction-form'))}
           className="w-14 h-14 rounded-full bg-surface border border-emerald-400 items-center justify-center shadow-lg"
           activeOpacity={0.85}
         >
@@ -34,7 +34,7 @@ export default function TransactionFloatingActions({ onOpenAddModal }: Transacti
 
         {/* New Sale Pill Button */}
         <TouchableOpacity
-          onPress={() => router.push({ pathname: '/quick-entry', params: { type: 'Sale' } })}
+          onPress={() => router.push({ pathname: '/transaction-form', params: { type: 'Sale' } })}
           className="flex-row items-center bg-primary px-5 py-3.5 rounded-full shadow-lg"
           activeOpacity={0.85}
         >
