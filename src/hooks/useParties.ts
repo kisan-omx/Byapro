@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { auth } from '../lib/firebase';
 import { getBusinessId } from '../services/quickEntryService';
-import { getParties, PAGE_SIZE, FetchPartiesParams } from '../services/partyService';
-import { Party } from '../components/quick-entry/PartySelectionModal';
+import { getParties, createNewParty, PAGE_SIZE } from '../services/partyService';
+import { Party, PartyCategoryFilter, PartyPaymentFilter, PartyType } from '../types/party';
 
 export interface UsePartiesOptions {
   searchQuery?: string;
-  type?: 'customer' | 'supplier' | 'both';
+  type?: 'customer' | 'supplier' | 'both' | 'all';
+  paymentFilter?: PartyPaymentFilter;
   enabled?: boolean;
 }
 
@@ -36,28 +37,33 @@ export async function preloadParties() {
 }
 
 export function useParties(options: UsePartiesOptions = {}) {
-  const { searchQuery = '', type, enabled = true } = options;
+  const { enabled = true } = options;
 
-  // Cache-first: initialize with cached parties if available and not searching
+  // Filter and search state
+  const [searchQuery, setSearchQuery] = useState(options.searchQuery || '');
+  const [categoryFilter, setCategoryFilter] = useState<PartyCategoryFilter>(
+    options.type === 'customer' || options.type === 'supplier' ? options.type : 'all'
+  );
+  const [paymentFilter, setPaymentFilter] = useState<PartyPaymentFilter>(
+    options.paymentFilter || 'all'
+  );
+
+  // Data states
   const [parties, setParties] = useState<Party[]>(() => {
     return !searchQuery.trim() && partyCache ? partyCache.parties : [];
   });
-  const [loading, setLoading] = useState(() => {
-    return !searchQuery.trim() && partyCache ? false : false;
-  });
+  const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [hasMore, setHasMore] = useState(() => {
-    return partyCache ? partyCache.hasMore : true;
-  });
+  const [hasMore, setHasMore] = useState(() => (partyCache ? partyCache.hasMore : true));
   const [error, setError] = useState<string | null>(null);
 
-  // Pagination refs to protect against stale closures and duplicate in-flight requests
+  // Refs for pagination control
   const pageRef = useRef(0);
   const isFetchingRef = useRef(false);
   const hasMoreRef = useRef(hasMore);
 
-  // Debounced search query
+  // Debounce search query
   const [debouncedQuery, setDebouncedQuery] = useState(searchQuery);
 
   useEffect(() => {
@@ -67,13 +73,12 @@ export function useParties(options: UsePartiesOptions = {}) {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Initial load or when search / filter changes
-  const fetchFirstPage = useCallback(async (queryTerm: string) => {
+  // Fetch first page helper
+  const fetchFirstPage = useCallback(async (queryTerm: string, cat: PartyCategoryFilter, pay: PartyPaymentFilter) => {
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
-    
-    // Only show full loading spinner if we don't have cached data to display
-    const hasCachedData = !queryTerm.trim() && partyCache && partyCache.parties.length > 0;
+
+    const hasCachedData = !queryTerm.trim() && cat === 'all' && pay === 'all' && partyCache && partyCache.parties.length > 0;
     if (!hasCachedData) {
       setLoading(true);
     }
@@ -88,7 +93,8 @@ export function useParties(options: UsePartiesOptions = {}) {
         searchQuery: queryTerm,
         page: 0,
         pageSize: PAGE_SIZE,
-        type,
+        type: cat,
+        paymentFilter: pay,
       });
 
       pageRef.current = 0;
@@ -96,8 +102,7 @@ export function useParties(options: UsePartiesOptions = {}) {
       setHasMore(result.hasMore);
       setParties(result.parties);
 
-      // Cache default first page
-      if (!queryTerm.trim()) {
+      if (!queryTerm.trim() && cat === 'all' && pay === 'all') {
         partyCache = {
           parties: result.parties,
           hasMore: result.hasMore,
@@ -110,19 +115,19 @@ export function useParties(options: UsePartiesOptions = {}) {
       setLoading(false);
       isFetchingRef.current = false;
     }
-  }, [type]);
+  }, []);
 
-  // Trigger initial fetch or reset on query/filter/enabled change
+  // Fetch on state changes
   useEffect(() => {
     if (enabled) {
       pageRef.current = 0;
       hasMoreRef.current = true;
       setHasMore(true);
-      fetchFirstPage(debouncedQuery);
+      fetchFirstPage(debouncedQuery, categoryFilter, paymentFilter);
     }
-  }, [enabled, debouncedQuery, fetchFirstPage]);
+  }, [enabled, debouncedQuery, categoryFilter, paymentFilter, fetchFirstPage]);
 
-  // Pull-to-refresh: resets pagination and loads the first 20
+  // Pull-to-refresh
   const refresh = useCallback(async () => {
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
@@ -138,7 +143,8 @@ export function useParties(options: UsePartiesOptions = {}) {
         searchQuery: debouncedQuery,
         page: 0,
         pageSize: PAGE_SIZE,
-        type,
+        type: categoryFilter,
+        paymentFilter,
       });
 
       pageRef.current = 0;
@@ -152,24 +158,16 @@ export function useParties(options: UsePartiesOptions = {}) {
       setRefreshing(false);
       isFetchingRef.current = false;
     }
-  }, [debouncedQuery, type]);
+  }, [debouncedQuery, categoryFilter, paymentFilter]);
 
-  // Infinite scroll: loads the next 20 and appends to current list
+  // Infinite scroll load more
   const loadMore = useCallback(async () => {
-    // Protection against duplicate / invalid page requests
-    if (
-      !hasMoreRef.current ||
-      isFetchingRef.current ||
-      loading ||
-      loadingMore ||
-      refreshing
-    ) {
+    if (!hasMoreRef.current || isFetchingRef.current || loading || loadingMore || refreshing) {
       return;
     }
 
     isFetchingRef.current = true;
     setLoadingMore(true);
-
     const nextPage = pageRef.current + 1;
 
     try {
@@ -181,14 +179,14 @@ export function useParties(options: UsePartiesOptions = {}) {
         searchQuery: debouncedQuery,
         page: nextPage,
         pageSize: PAGE_SIZE,
-        type,
+        type: categoryFilter,
+        paymentFilter,
       });
 
       pageRef.current = nextPage;
       hasMoreRef.current = result.hasMore;
       setHasMore(result.hasMore);
 
-      // Append new records; prevent duplicate IDs
       setParties((prev) => {
         const existingIds = new Set(prev.map((p) => p.id));
         const uniqueNew = result.parties.filter((p) => !existingIds.has(p.id));
@@ -200,7 +198,36 @@ export function useParties(options: UsePartiesOptions = {}) {
       setLoadingMore(false);
       isFetchingRef.current = false;
     }
-  }, [debouncedQuery, loading, loadingMore, refreshing, type]);
+  }, [debouncedQuery, categoryFilter, paymentFilter, loading, loadingMore, refreshing]);
+
+  // Reset filters helper
+  const resetFilters = useCallback(() => {
+    setSearchQuery('');
+    setCategoryFilter('all');
+    setPaymentFilter('all');
+  }, []);
+
+  // Add party action
+  const addNewParty = useCallback(
+    async (params: { name: string; phone?: string; type?: PartyType }) => {
+      const user = auth.currentUser;
+      if (!user) throw new Error('User not authenticated');
+      const businessId = await getBusinessId(user.uid);
+      if (!businessId) throw new Error('No business found');
+
+      const created = await createNewParty({
+        businessId,
+        name: params.name,
+        phone: params.phone,
+        type: params.type,
+      });
+
+      // Prepend to current list
+      setParties((prev) => [created, ...prev]);
+      return created;
+    },
+    []
+  );
 
   return {
     parties,
@@ -209,7 +236,15 @@ export function useParties(options: UsePartiesOptions = {}) {
     refreshing,
     hasMore,
     error,
+    searchQuery,
+    setSearchQuery,
+    categoryFilter,
+    setCategoryFilter,
+    paymentFilter,
+    setPaymentFilter,
     loadMore,
     refresh,
+    resetFilters,
+    addNewParty,
   };
 }
