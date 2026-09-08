@@ -121,35 +121,73 @@ export async function getParties({
  * Creates a new party record in Supabase.
  */
 export async function createNewParty(params: {
+  id?: string;
   businessId: string;
   name: string;
   phone?: string;
+  email?: string;
+  address?: string;
   type?: PartyType;
+  openingBalance?: number;
+  balanceType?: 'To Receive' | 'To Give' | 'Settled';
 }): Promise<Party> {
-  const { businessId, name, phone, type = 'both' } = params;
+  const { id, businessId, name, phone, email, address, type = 'both', openingBalance = 0, balanceType = 'Settled' } = params;
 
-  const { data, error } = await supabase
+  let signedBalance = 0;
+  if (openingBalance > 0) {
+    signedBalance = balanceType === 'To Give' ? -Math.abs(openingBalance) : Math.abs(openingBalance);
+  }
+
+  const insertPayload: any = {
+    business_id: businessId,
+    name: name.trim(),
+    phone: phone?.trim() || null,
+    type,
+  };
+
+  if (id) insertPayload.id = id;
+  if (email?.trim()) insertPayload.email = email.trim();
+  if (address?.trim()) insertPayload.address = address.trim();
+  if (signedBalance !== 0) insertPayload.balance = signedBalance;
+
+  let res = await supabase
     .from('parties')
-    .insert({
+    .upsert(insertPayload, { onConflict: 'id' })
+    .select('id, name, phone, type, created_at')
+    .single();
+
+  // If PostgREST returns missing column error (code PGRST204 or message mentioning column), fallback safely to core fields
+  if (res.error && (res.error.code === 'PGRST204' || res.error.message?.includes('column'))) {
+    const fallbackPayload: any = {
       business_id: businessId,
       name: name.trim(),
       phone: phone?.trim() || null,
       type,
-    })
-    .select('id, name, phone, type, created_at')
-    .single();
+    };
+    if (id) fallbackPayload.id = id;
+    res = await supabase
+      .from('parties')
+      .upsert(fallbackPayload, { onConflict: 'id' })
+      .select('id, name, phone, type, created_at')
+      .single();
+  }
 
-  if (error) throw error;
+  if (res.error) throw res.error;
+
+  const data = res.data;
 
   return {
     id: data.id,
     name: data.name,
     phone: data.phone,
+    email: email?.trim() || null,
+    address: address?.trim() || null,
     subtitle: formatDateSubtitle(data.created_at, data.phone),
     type: 'Party',
-    balance: 0,
-    balanceType: 'Settled',
+    balance: Math.abs(signedBalance),
+    balanceType: signedBalance > 0 ? 'To Receive' : signedBalance < 0 ? 'To Give' : 'Settled',
     createdAt: data.created_at,
+    syncStatus: 'synced',
   };
 }
 
@@ -196,15 +234,15 @@ export async function getOrCreateParty(
   }
 
   // Try matching by name
-  const { data: byName } = await supabase
+  const { data: byNameRows } = await supabase
     .from('parties')
     .select('id')
     .eq('business_id', businessId)
     .ilike('name', party.name.trim())
-    .maybeSingle();
+    .limit(1);
 
-  if (byName?.id) {
-    return byName.id;
+  if (byNameRows && byNameRows.length > 0 && byNameRows[0]?.id) {
+    return byNameRows[0].id;
   }
 
   // Create new party in Supabase
@@ -221,5 +259,32 @@ export async function getOrCreateParty(
 
   if (error) throw error;
   return created.id;
+}
+
+/**
+ * Checks if a party with the given name (case-insensitive) already exists for the business.
+ */
+export async function checkPartyExistsByName(businessId: string, name: string): Promise<boolean> {
+  const trimmed = name.trim();
+  if (!trimmed || !businessId) return false;
+
+  try {
+    const { data, error } = await supabase
+      .from('parties')
+      .select('id')
+      .eq('business_id', businessId)
+      .ilike('name', trimmed)
+      .limit(1);
+
+    if (error) {
+      console.error('Error checking existing party by name:', error);
+      return false;
+    }
+
+    return Array.isArray(data) && data.length > 0;
+  } catch (err) {
+    console.error('Error checking existing party by name:', err);
+    return false;
+  }
 }
 
