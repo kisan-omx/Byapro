@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Alert } from 'react-native';
+import { View, Alert, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
 import ReusableTransactionHeader from '../components/transactions/ReusableTransactionHeader';
@@ -136,37 +136,48 @@ export default function TransactionFormScreen() {
         onBack={() => router.back()}
       />
 
-      {/* ── Reusable Form Body ─────────────────────────────────────────── */}
-      <ReusableTransactionForm
-        entryType={entryType}
-        paymentType={paymentType}
-        invoiceNo={invoiceNoText}
-        onInvoiceNoChange={setInvoiceNoText}
-        date={dateStr}
-        selectedParty={selectedParty}
-        partyNameText={partyNameText}
-        onPartyNameChange={handlePartyNameChange}
-        onPartyPress={() => setIsPartyModalVisible(true)}
-        amount={amount}
-        onAmountChange={(val) => {
-          clearValidationError();
-          setAmount(val);
-        }}
-        showAddItems={showAddItems}
-        onAddItemsPress={handleAddItems}
-        onBarcodeScanPress={handleBarcodeScan}
-        note={note}
-        onNoteChange={setNote}
-        partyError={partyError}
-        amountError={amountError}
-      />
+      {/* ── Keyboard Avoiding View (Buttons rest just on top of keyboard) ─ */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        keyboardVerticalOffset={0}
+        className="flex-1"
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View className="flex-1">
+            {/* ── Reusable Form Body ─────────────────────────────────────────── */}
+            <ReusableTransactionForm
+              entryType={entryType}
+              paymentType={paymentType}
+              invoiceNo={invoiceNoText}
+              onInvoiceNoChange={setInvoiceNoText}
+              date={dateStr}
+              selectedParty={selectedParty}
+              partyNameText={partyNameText}
+              onPartyNameChange={handlePartyNameChange}
+              onPartyPress={() => setIsPartyModalVisible(true)}
+              amount={amount}
+              onAmountChange={(val) => {
+                clearValidationError();
+                setAmount(val);
+              }}
+              showAddItems={showAddItems}
+              onAddItemsPress={handleAddItems}
+              onBarcodeScanPress={handleBarcodeScan}
+              note={note}
+              onNoteChange={setNote}
+              partyError={partyError}
+              amountError={amountError}
+            />
 
-      {/* ── Reusable Footer (Save & New + Save, No Three Dot) ────────── */}
-      <ReusableTransactionFooter
-        onSave={handleSave}
-        onSaveAndNew={handleSaveAndNew}
-        loading={saving}
-      />
+            {/* ── Reusable Footer (Save & New + Save, No Three Dot) ────────── */}
+            <ReusableTransactionFooter
+              onSave={handleSave}
+              onSaveAndNew={handleSaveAndNew}
+              loading={saving}
+            />
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
 
       {/* ── Party / Category Selection Modal ─────────────────────────── */}
       <PartySelectionModal

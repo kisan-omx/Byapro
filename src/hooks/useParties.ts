@@ -3,6 +3,8 @@ import { auth } from '../lib/firebase';
 import { getBusinessId } from '../services/quickEntryService';
 import { getParties, createNewParty, PAGE_SIZE } from '../services/partyService';
 import { Party, PartyCategoryFilter, PartyPaymentFilter, PartyType } from '../types/party';
+import { partyEvents } from '../services/partyEvents';
+import { generateUUID } from '../utils/uuid';
 
 export interface UsePartiesOptions {
   searchQuery?: string;
@@ -207,24 +209,113 @@ export function useParties(options: UsePartiesOptions = {}) {
     setPaymentFilter('all');
   }, []);
 
+  useEffect(() => {
+    const unsubscribeCreated = partyEvents.onCreated((party) => {
+      setParties((prev) => [party, ...prev.filter((p) => p.id !== party.id)]);
+    });
+
+    const unsubscribeSaved = partyEvents.onSaved(({ tempId, realParty }) => {
+      setParties((prev) =>
+        prev.map((p) => (p.id === tempId ? { ...(realParty || p), syncStatus: 'synced' } : p))
+      );
+    });
+
+    const unsubscribeFailed = partyEvents.onFailed(({ tempId, errorMsg }) => {
+      setParties((prev) =>
+        prev.map((p) => (p.id === tempId ? { ...p, syncStatus: 'failed', syncError: errorMsg } : p))
+      );
+    });
+
+    const unsubscribeRetry = partyEvents.onRetry((party) => {
+      setParties((prev) =>
+        prev.map((p) => (p.id === party.id ? { ...p, syncStatus: 'saving', syncError: undefined } : p))
+      );
+
+      (async () => {
+        try {
+          const user = auth.currentUser;
+          if (!user) throw new Error('User not authenticated');
+          const businessId = await getBusinessId(user.uid);
+          if (!businessId) throw new Error('No business found');
+
+          const raw = party.rawPayload || {
+            businessId,
+            name: party.name,
+            phone: party.phone || undefined,
+            email: party.email || undefined,
+            address: party.address || undefined,
+            type: 'both' as PartyType,
+            openingBalance: party.balance || 0,
+            balanceType: party.balanceType || 'Settled',
+          };
+
+          const saved = await createNewParty({
+            id: party.id,
+            ...raw,
+          });
+
+          partyEvents.emitSaved(party.id, saved);
+        } catch (err: any) {
+          console.error('Error retrying party save:', err);
+          partyEvents.emitFailed(party.id, err?.message || 'Failed to save party');
+        }
+      })();
+    });
+
+    return () => {
+      unsubscribeCreated();
+      unsubscribeSaved();
+      unsubscribeFailed();
+      unsubscribeRetry();
+    };
+  }, []);
+
   // Add party action
   const addNewParty = useCallback(
     async (params: { name: string; phone?: string; type?: PartyType }) => {
-      const user = auth.currentUser;
-      if (!user) throw new Error('User not authenticated');
-      const businessId = await getBusinessId(user.uid);
-      if (!businessId) throw new Error('No business found');
+      const tempId = generateUUID();
+      const optimisticParty: Party = {
+        id: tempId,
+        name: params.name.trim(),
+        phone: params.phone?.trim() || null,
+        type: 'Party',
+        subtitle: params.phone?.trim() || 'No phone number',
+        balance: 0,
+        balanceType: 'Settled',
+        createdAt: new Date().toISOString(),
+        syncStatus: 'saving',
+      };
 
-      const created = await createNewParty({
-        businessId,
-        name: params.name,
-        phone: params.phone,
-        type: params.type,
-      });
+      partyEvents.emitCreated(optimisticParty);
 
-      // Prepend to current list
-      setParties((prev) => [created, ...prev]);
-      return created;
+      (async () => {
+        try {
+          const user = auth.currentUser;
+          if (!user) throw new Error('User not authenticated');
+          const businessId = await getBusinessId(user.uid);
+          if (!businessId) throw new Error('No business found');
+
+          const rawPayload = {
+            businessId,
+            name: params.name.trim(),
+            phone: params.phone?.trim() || undefined,
+            type: params.type || 'both',
+          };
+
+          const created = await createNewParty({
+            id: tempId,
+            ...rawPayload,
+          });
+
+          created.rawPayload = rawPayload;
+          partyEvents.emitSaved(tempId, created);
+        } catch (err: any) {
+          console.error('Error saving modal party:', err);
+          partyEvents.emitFailed(tempId, err?.message || 'Failed to save party');
+        }
+      })();
+
+      return optimisticParty;
     },
     []
   );

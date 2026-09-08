@@ -140,8 +140,9 @@ export default function PartiesScreen() {
 
       {/* Bottom Action: "Add New Party" Centered Button in Primary Color (No Logo) */}
       <PartyBottomActions
-        onOpenAddPartyModal={() => setIsAddPartyModalVisible(true)}
+        onOpenAddPartyModal={() => router.push('/add-party')}
       />
+
 
       {/* Payment Status Dropdown Modal */}
       <PaymentFilterModal

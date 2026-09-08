@@ -7,10 +7,14 @@ import {
   TextInput,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { PartyType } from '../../types/party';
 import PrimaryButton from '../common/PrimaryButton';
+import { auth } from '../../lib/firebase';
+import { getBusinessId } from '../../services/quickEntryService';
+import { checkPartyExistsByName } from '../../services/partyService';
 
 export interface AddPartyModalProps {
   visible: boolean;
@@ -37,6 +41,18 @@ export const AddPartyModal: React.FC<AddPartyModalProps> = ({
     setErrorMsg(null);
     setLoading(true);
     try {
+      const user = auth.currentUser;
+      const businessId = user ? await getBusinessId(user.uid) : null;
+      if (businessId) {
+        const exists = await checkPartyExistsByName(businessId, name.trim());
+        if (exists) {
+          const errorText = 'Party name already exists';
+          setErrorMsg(errorText);
+          setLoading(false);
+          return;
+        }
+      }
+
       await onAddParty({ name: name.trim(), phone: phone.trim() || undefined, type: partyType });
       setName('');
       setPhone('');
@@ -69,7 +85,10 @@ export const AddPartyModal: React.FC<AddPartyModalProps> = ({
               </View>
 
               {errorMsg && (
-                <Text className="text-xs text-error font-medium mb-3">{errorMsg}</Text>
+                <View className="bg-[#EF4444] rounded-2xl px-4 py-3 mb-4 flex-row items-center shadow-xs">
+                  <Feather name="alert-circle" size={20} color="#FFFFFF" style={{ marginRight: 10 }} />
+                  <Text className="text-sm font-semibold text-white flex-1">{errorMsg}</Text>
+                </View>
               )}
 
               {/* Name Input */}

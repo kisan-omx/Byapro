@@ -8,3 +8,4 @@ export { TransactionCard } from './TransactionCard';
 export type { TransactionCardProps } from './TransactionCard';
 export { default as SelectDateModal } from './SelectDateModal';
 export { default as SelectTypeModal } from './SelectTypeModal';
+export { DatePickerModal } from './DatePickerModal';
