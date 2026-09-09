@@ -15,7 +15,7 @@ export async function getBusinessId(firebaseUid: string): Promise<string | null>
     .from('users')
     .select('business_id')
     .eq('id', firebaseUid)
-    .single();
+    .maybeSingle(); // .single() throws if row missing; maybeSingle() returns null safely
 
   if (!error && data?.business_id) {
     cachedBusinessId = { uid: firebaseUid, id: data.business_id };
