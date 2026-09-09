@@ -127,6 +127,15 @@ export default function SetupBusinessScreen() {
 
       if (error) throw error;
 
+      // Write business_id back to users table.
+      // Without this, users.business_id stays null forever and
+      // getBusinessId() always uses the slow businesses-table fallback
+      // on every app open / service call.
+      await supabase
+        .from("users")
+        .update({ business_id: data.id })
+        .eq("id", targetUserId);
+
       // Navigate to tabs layout upon success
       router.replace("/(tabs)/home");
     } catch (e: any) {

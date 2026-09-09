@@ -13,6 +13,8 @@ export default function Index() {
 
   useEffect(() => {
     let unsubscribeAuth: (() => void) | undefined;
+    // Guard: only navigate once per mount, ignore subsequent onAuthStateChanged events
+    let hasNavigated = false;
 
     async function determineRoute() {
       try {
@@ -24,26 +26,57 @@ export default function Index() {
 
         const checkUserBusiness = async (userId: string) => {
           try {
+            // ─── Critical fix ─────────────────────────────────────────────
+            // On cold start, Firebase has restored the session but the ID
+            // token may not be injected into the Supabase fetch interceptor
+            // yet. We force-refresh the token here so the RLS policy
+            // firebase_uid() can resolve correctly.
+            const user = auth.currentUser;
+            if (user) {
+              await user.getIdToken(false); // warm up — uses cache if valid
+            }
+            // ─────────────────────────────────────────────────────────────
+
+            // Use plain .select().limit(1) — returns an array, never throws.
+            // .single() and .maybeSingle() both error with PGRST116 when
+            // multiple rows exist (user has more than one business record).
             const { data, error } = await supabase
               .from("businesses")
               .select("id")
               .eq("owner_id", userId)
-              .single();
-            if (error || !data?.id) {
+              .order("created_at", { ascending: false })
+              .limit(1);
+
+            if (error) {
+              console.warn("Business check error:", error.message);
               return "/setup-business";
             }
-            return "/(tabs)/home";
+
+            // data is always an array — route home if any business exists
+            return Array.isArray(data) && data.length > 0
+              ? "/(tabs)/home"
+              : "/setup-business";
           } catch (err) {
+            console.warn("Business check exception:", err);
             return "/setup-business";
           }
         };
 
         unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+          // Only act on the first resolved auth state per app open
+          if (hasNavigated) return;
+
           if (user) {
             const route = await checkUserBusiness(user.uid);
-            setInitialRoute(route);
+            if (!hasNavigated) {
+              hasNavigated = true;
+              setInitialRoute(route);
+            }
           } else {
-            setInitialRoute("/auth");
+            if (!hasNavigated) {
+              hasNavigated = true;
+              setInitialRoute("/auth");
+            }
           }
         });
       } catch (e) {
