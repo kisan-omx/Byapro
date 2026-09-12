@@ -19,6 +19,11 @@ export interface Item {
   stockQuantity: number;
   lowStockAlert?: number | null;
   unit?: string | null;
+  categoryId?: string | null;
+  asOfDate?: string | null;
+  atPrice?: number | null;
+  itemLocation?: string | null;
+  itemType?: 'product' | 'service';
   createdAt: string;
   // Derived UI helpers
   stockStatus: StockStatus;

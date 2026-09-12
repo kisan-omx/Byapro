@@ -68,3 +68,50 @@ export const STOCK_STATUS_CONFIG: Record<StockStatus, StockStatusConfig> = {
     badgeTextClass: 'text-error',
   },
 };
+
+// ─────────────────────────────────────────────────
+// Add Item Page Constants
+// ─────────────────────────────────────────────────
+export const ADD_ITEM_CONSTANTS = {
+  HEADER_TITLE: 'Add Item',
+
+  ITEM_TYPES: [
+    { id: 'product', label: 'Product' },
+    { id: 'service', label: 'Services' },
+  ] as const,
+
+  FORM_LABELS: {
+    ITEM_NAME: 'Item Name',
+    SELECT_UNIT: 'Select Unit',
+    SELLING_PRICE: 'Selling Price',
+    PURCHASE_PRICE: 'Purchase Price',
+    OPENING_STOCK: 'Opening Stock',
+    LOW_STOCK_ALERT: 'Low Stock Alert',
+    SKU: 'SKU / Barcode',
+  },
+
+  PLACEHOLDERS: {
+    ITEM_NAME: '',
+    SELLING_PRICE: '0',
+    PURCHASE_PRICE: '0',
+    OPENING_STOCK: '0',
+    LOW_STOCK_ALERT: 'e.g. 5',
+    SKU: 'e.g. SKU-001',
+  },
+
+  BUTTONS: {
+    CANCEL: 'Cancel',
+    SAVE: 'Save',
+  },
+
+  VALIDATION: {
+    NAME_REQUIRED: 'Item name is required.',
+    SELLING_PRICE_REQUIRED: 'Selling price is required.',
+    SELLING_PRICE_INVALID: 'Enter a valid selling price.',
+    PURCHASE_PRICE_INVALID: 'Enter a valid purchase price.',
+    STOCK_INVALID: 'Enter a valid opening stock quantity.',
+    LOW_STOCK_INVALID: 'Enter a valid low stock alert value.',
+  },
+} as const;
+
+export type ItemType = (typeof ADD_ITEM_CONSTANTS.ITEM_TYPES)[number]['id'];
