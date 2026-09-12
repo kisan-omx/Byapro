@@ -257,6 +257,7 @@ export function useItems() {
       stockQuantity?: number;
       lowStockAlert?: number;
       sku?: string;
+      itemType?: 'product' | 'service';
     }) => {
       const tempId = generateUUID();
       const qty = formData.stockQuantity ?? 0;
@@ -276,6 +277,7 @@ export function useItems() {
         stockQuantity: qty,
         lowStockAlert: lowAlert,
         unit: formData.unit?.trim().toUpperCase() || null,
+        itemType: formData.itemType ?? 'product',
         createdAt: new Date().toISOString(),
         stockStatus,
         avatarLetter: (formData.name.trim()[0] ?? '?').toUpperCase(),
@@ -302,6 +304,7 @@ export function useItems() {
             stockQuantity: formData.stockQuantity,
             lowStockAlert: formData.lowStockAlert,
             sku: formData.sku,
+            itemType: formData.itemType ?? 'product',
           });
 
           itemEvents.emitSaved(tempId, saved);

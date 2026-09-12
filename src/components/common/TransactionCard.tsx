@@ -113,14 +113,6 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({
             {item.date}
           </Text>
 
-          {/* Saving Indicator */}
-          {item.syncStatus === 'saving' && (
-            <View className="px-2 py-0.5 rounded-md bg-amber-100 flex-row items-center gap-x-1">
-              <ActivityIndicator size={10} color="#D97706" />
-              <Text className="text-[10px] font-bold text-amber-700">Saving...</Text>
-            </View>
-          )}
-
           {/* Failed / Retry Indicator */}
           {item.syncStatus === 'failed' && (
             <TouchableOpacity

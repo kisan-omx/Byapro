@@ -43,15 +43,15 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onPress, onRetry }) =>
         shadowRadius: 3,
         elevation: 1,
       }}
-      className={`bg-surface mx-4 mb-2.5 p-3.5 rounded-xl border shadow-2xs ${
+      className={`bg-surface mx-3 mb-2.5 p-3.5 rounded-xl border shadow-2xs ${
         isFailed ? 'border-rose-300' : 'border-slate-200/80'
       }`}
     >
       {/* Row 1: Avatar + Name + Unit badge */}
       <View className="flex-row items-center mb-2">
         {/* Avatar letter */}
-        <View className="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200/80 items-center justify-center mr-3 flex-shrink-0">
-          <Text className="text-sm font-bold text-slate-600">{item.avatarLetter}</Text>
+        <View className="w-12 h-12 rounded-md bg-slate-100 items-center justify-center mr-3 flex-shrink-0">
+          <Text className="text-lg font-bold text-slate-600">{item.avatarLetter}</Text>
         </View>
 
         {/* Name */}
@@ -71,12 +71,12 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onPress, onRetry }) =>
       </View>
 
       {/* Row 2: Sales / Purchase / Quantity */}
-      <View className="flex-row items-center pl-12">
+      <View className="flex-row items-center pl-16">
         {/* Sales price */}
         <View className="flex-1">
           <Text className="text-[10px] text-text-secondary font-medium mb-0.5">Sales</Text>
           <Text className="text-sm font-semibold text-text">
-            Rs. {item.sellingPrice.toLocaleString()}
+            Rs. {item.sellingPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Text>
         </View>
 
@@ -84,7 +84,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onPress, onRetry }) =>
         <View className="flex-1">
           <Text className="text-[10px] text-text-secondary font-medium mb-0.5">Purchase</Text>
           <Text className="text-sm font-semibold text-text">
-            Rs. {item.purchasePrice != null ? item.purchasePrice.toLocaleString() : '0'}
+            Rs. {item.purchasePrice != null ? item.purchasePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
           </Text>
         </View>
 
@@ -98,12 +98,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onPress, onRetry }) =>
         </View>
       </View>
 
-      {/* Saving / Failed indicator */}
-      {isSaving && (
-        <View className="mt-2 pl-12">
-          <Text className="text-[10px] text-text-secondary font-medium">Saving...</Text>
-        </View>
-      )}
+      {/* Failed indicator only */}
 
       {isFailed && (
         <View className="mt-2 pl-12 flex-row items-center">

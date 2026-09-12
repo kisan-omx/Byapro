@@ -55,6 +55,11 @@ function mapRowToItem(row: any): Item {
     stockQuantity: qty,
     lowStockAlert: lowAlert,
     unit: row.unit ?? null,
+    categoryId: row.category_id ?? null,
+    asOfDate: row.as_of_date ?? null,
+    atPrice: row.at_price != null ? Number(row.at_price) : null,
+    itemLocation: row.item_location ?? null,
+    itemType: row.item_type ?? 'product',
     createdAt: row.created_at,
     stockStatus: deriveStockStatus(qty, lowAlert),
     avatarLetter: toAvatarLetter(row.name),
@@ -80,7 +85,7 @@ export async function getItems({
 
   let query = supabase
     .from('items')
-    .select('id, business_id, name, sku, selling_price, purchase_price, stock_quantity, low_stock_alert, unit, created_at')
+    .select('id, business_id, name, sku, selling_price, purchase_price, stock_quantity, low_stock_alert, unit, category_id, as_of_date, at_price, item_location, item_type, created_at')
     .eq('business_id', businessId)
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
@@ -143,12 +148,17 @@ export interface CreateItemParams {
   id?: string;
   businessId: string;
   name: string;
-  sellingPrice: number;
+  sellingPrice?: number;
   purchasePrice?: number;
   unit?: string;
+  categoryId?: string;
   stockQuantity?: number;
+  asOfDate?: string;
+  atPrice?: number;
   lowStockAlert?: number;
+  itemLocation?: string;
   sku?: string;
+  itemType?: 'product' | 'service';
 }
 
 export async function createItem(params: CreateItemParams): Promise<Item> {
@@ -156,12 +166,17 @@ export async function createItem(params: CreateItemParams): Promise<Item> {
     id,
     businessId,
     name,
-    sellingPrice,
+    sellingPrice = 0,
     purchasePrice,
     unit,
+    categoryId,
     stockQuantity = 0,
+    asOfDate,
+    atPrice,
     lowStockAlert,
+    itemLocation,
     sku,
+    itemType = 'product',
   } = params;
 
   const payload: any = {
@@ -169,18 +184,23 @@ export async function createItem(params: CreateItemParams): Promise<Item> {
     name: name.trim(),
     selling_price: sellingPrice,
     stock_quantity: stockQuantity,
+    item_type: itemType,
   };
 
   if (id) payload.id = id;
   if (purchasePrice != null) payload.purchase_price = purchasePrice;
   if (unit?.trim()) payload.unit = unit.trim().toUpperCase();
+  if (categoryId?.trim()) payload.category_id = categoryId.trim();
+  if (asOfDate?.trim()) payload.as_of_date = asOfDate.trim();
+  if (atPrice != null) payload.at_price = atPrice;
   if (lowStockAlert != null) payload.low_stock_alert = lowStockAlert;
+  if (itemLocation?.trim()) payload.item_location = itemLocation.trim();
   if (sku?.trim()) payload.sku = sku.trim();
 
   const { data, error } = await supabase
     .from('items')
     .upsert(payload, { onConflict: 'id' })
-    .select('id, business_id, name, sku, selling_price, purchase_price, stock_quantity, low_stock_alert, unit, created_at')
+    .select('id, business_id, name, sku, selling_price, purchase_price, stock_quantity, low_stock_alert, unit, category_id, as_of_date, at_price, item_location, item_type, created_at')
     .single();
 
   if (error) throw error;

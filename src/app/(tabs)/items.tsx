@@ -5,9 +5,11 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 import { useItems } from '../../hooks/useItems';
 import {
@@ -22,6 +24,12 @@ import {
 } from '../../components/items';
 
 export default function ItemsScreen() {
+  const router = useRouter();
+  const { width } = useWindowDimensions();
+
+  // 2 columns on tablet/larger (≥ 640px), 1 on phone
+  const numColumns = width >= 640 ? 2 : 1;
+
   // ── Modal visibility ─────────────────────────────
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
@@ -48,6 +56,7 @@ export default function ItemsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <View style={{ flex: 1, maxWidth: 1024, width: '100%', alignSelf: 'center' }}>
       {/* ── Header: Title, Search, Filter icon ──── */}
       <ItemHeader
         searchQuery={searchQuery}
@@ -69,15 +78,19 @@ export default function ItemsScreen() {
 
       {/* ── Items list with infinite scroll ──────── */}
       <FlatList
+        key={String(numColumns)}
         data={items}
         keyExtractor={(item) => item.id}
+        numColumns={numColumns}
         renderItem={({ item }) => (
-          <ItemCard
-            item={item}
-            onPress={() => {
-              // Future: navigate to item detail/edit screen
-            }}
-          />
+          <View style={{ flex: 1 }}>
+            <ItemCard
+              item={item}
+              onPress={() => {
+                // Future: navigate to item detail/edit screen
+              }}
+            />
+          </View>
         )}
         ListFooterComponent={
           <View className="py-4 items-center justify-center pb-28">
@@ -127,7 +140,7 @@ export default function ItemsScreen() {
       />
 
       {/* ── Centered "Add New Item" FAB ───────────── */}
-      <ItemBottomActions onOpenAddItemModal={() => setIsAddModalVisible(true)} />
+      <ItemBottomActions onOpenAddItemModal={() => router.push('/add-item')} />
 
       {/* ── Add Item Modal ────────────────────────── */}
       <AddItemModal
@@ -159,6 +172,7 @@ export default function ItemsScreen() {
         selectedFilter={typeFilter}
         onSelectFilter={setTypeFilter}
       />
+      </View>
     </SafeAreaView>
   );
 }
