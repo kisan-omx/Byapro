@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
-import { ADD_ITEM_CONSTANTS } from '../../constants/items';
+import { ADD_ITEM_CONSTANTS, getUnitShortName } from '../../constants/items';
 
 export interface AddItemNameFieldProps {
   value: string;
   onChangeText: (v: string) => void;
   unit: string;
+  secondaryUnit?: string;
+  conversionRate?: string;
   onSelectUnit: () => void;
   onSubmitEditing?: () => void;
   autoFocus?: boolean;
@@ -13,22 +15,28 @@ export interface AddItemNameFieldProps {
 
 /**
  * Item Name field with a stable fixed-height bordered container.
- * Label is always pinned small at the top — no floating animation,
- * so typing never triggers a height change or layout reflow.
- * Only the border colour changes on focus.
+ * Shows "Select Unit" pill when no unit is set, "Edit Unit" when unit is set.
+ * Shows conversion rate formula just below the field when both units and rate are set.
  */
 export const AddItemNameField: React.FC<AddItemNameFieldProps> = ({
   value,
   onChangeText,
   unit,
+  secondaryUnit,
+  conversionRate,
   onSelectUnit,
   onSubmitEditing,
   autoFocus = true,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
+  const hasUnit = !!unit;
+  const showFormula = hasUnit && !!secondaryUnit && !!conversionRate?.trim();
+  const primaryShort = getUnitShortName(unit);
+  const secondaryShort = getUnitShortName(secondaryUnit);
+
   return (
-    <View className="mx-4 mt-4 mb-4">
+    <View className="mx-4 mt-4 mb-1">
       {/* Bordered container — fixed height so typing never resizes it */}
       <View
         className={`flex-row items-center border rounded-xl px-3 bg-surface ${
@@ -78,21 +86,31 @@ export const AddItemNameField: React.FC<AddItemNameFieldProps> = ({
           />
         </View>
 
-        {/* Select Unit pill button — vertically centred */}
+        {/* Unit button — "Select Unit" or "Edit Unit" */}
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={onSelectUnit}
-          className="ml-3 bg-slate-100 border border-slate-200 rounded-full px-3.5 py-1.5"
+          className={`ml-3 rounded-full px-3.5 py-1.5 border ${
+            hasUnit
+              ? 'bg-primary/10 border-primary/30'
+              : 'bg-slate-100 border-slate-200'
+          }`}
           accessibilityLabel="Select unit of measurement"
         >
-          <Text className="text-xs font-semibold text-text-secondary">
-            {unit ? unit : ADD_ITEM_CONSTANTS.FORM_LABELS.SELECT_UNIT}
+          <Text className={`text-xs font-semibold ${hasUnit ? 'text-primary' : 'text-text-secondary'}`}>
+            {hasUnit ? 'Edit Unit' : ADD_ITEM_CONSTANTS.FORM_LABELS.SELECT_UNIT}
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Conversion Rate Formula — shown below item name field when both units & rate are set */}
+      {showFormula ? (
+        <Text className="text-xs font-semibold text-text-secondary text-right mt-1.5 mr-1">
+          1 {primaryShort || unit} = {conversionRate!.trim()} {secondaryShort || secondaryUnit}
+        </Text>
+      ) : null}
     </View>
   );
 };
 
 export default AddItemNameField;
-

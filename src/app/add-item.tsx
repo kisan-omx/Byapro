@@ -9,7 +9,6 @@ import {
   Platform,
   useWindowDimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
@@ -87,7 +86,7 @@ export default function AddItemScreen() {
   const isNameEntered = form.name.trim().length > 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
+    <View className="flex-1 bg-surface">
       <View style={{ flex: 1, maxWidth: 768, width: '100%', alignSelf: 'center' }}>
       {/* ── Header: Back arrow · Title · Camera icon ── */}
       <AddItemPageHeader
@@ -97,9 +96,6 @@ export default function AddItemScreen() {
         }}
       />
 
-      {/* ── Product / Services Toggle ─────────────── */}
-      <AddItemTypeToggle value={form.itemType} onChange={setItemType} />
-
       {/* ── Keyboard Avoiding View ────────────────── */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
@@ -108,6 +104,8 @@ export default function AddItemScreen() {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View className="flex-1">
+            {/* ── Product / Services Toggle ─────────────── */}
+            <AddItemTypeToggle value={form.itemType} onChange={setItemType} />
             <ScrollView
               className="flex-1"
               keyboardShouldPersistTaps="handled"
@@ -127,6 +125,8 @@ export default function AddItemScreen() {
                 value={form.name}
                 onChangeText={updateField('name')}
                 unit={form.unit}
+                secondaryUnit={form.secondaryUnit}
+                conversionRate={form.conversionRate}
                 onSelectUnit={openUnitModal}
                 autoFocus
               />
@@ -195,6 +195,8 @@ export default function AddItemScreen() {
       <AddItemUnitModal
         visible={isUnitModalVisible}
         selectedUnit={form.unit}
+        selectedSecondaryUnit={form.secondaryUnit}
+        selectedConversionRate={form.conversionRate}
         units={unitOptions}
         onSelect={handleSelectUnit}
         onClose={closeUnitModal}
@@ -240,6 +242,6 @@ export default function AddItemScreen() {
         onSelectDate={updateField('asOfDate')}
       />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

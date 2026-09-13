@@ -405,6 +405,7 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
                   placeholderTextColor="#94A3B8"
                   maxLength={60}
                   autoCorrect={false}
+                  autoFocus={true}
                 />
                 {searchQuery.length > 0 && (
                   <TouchableOpacity onPress={() => setSearchQuery('')} className="p-1">

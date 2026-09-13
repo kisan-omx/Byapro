@@ -55,6 +55,8 @@ function mapRowToItem(row: any): Item {
     stockQuantity: qty,
     lowStockAlert: lowAlert,
     unit: row.unit ?? null,
+    secondaryUnit: row.secondary_unit ?? null,
+    conversionRate: row.conversion_rate != null ? Number(row.conversion_rate) : null,
     categoryId: row.category_id ?? null,
     asOfDate: row.as_of_date ?? null,
     atPrice: row.at_price != null ? Number(row.at_price) : null,
@@ -85,7 +87,7 @@ export async function getItems({
 
   let query = supabase
     .from('items')
-    .select('id, business_id, name, sku, selling_price, purchase_price, stock_quantity, low_stock_alert, unit, category_id, as_of_date, at_price, item_location, item_type, created_at')
+    .select('id, business_id, name, sku, selling_price, purchase_price, stock_quantity, low_stock_alert, unit, secondary_unit, conversion_rate, category_id, as_of_date, at_price, item_location, item_type, created_at')
     .eq('business_id', businessId)
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
@@ -151,6 +153,8 @@ export interface CreateItemParams {
   sellingPrice?: number;
   purchasePrice?: number;
   unit?: string;
+  secondaryUnit?: string;
+  conversionRate?: number;
   categoryId?: string;
   stockQuantity?: number;
   asOfDate?: string;
@@ -190,6 +194,8 @@ export async function createItem(params: CreateItemParams): Promise<Item> {
   if (id) payload.id = id;
   if (purchasePrice != null) payload.purchase_price = purchasePrice;
   if (unit?.trim()) payload.unit = unit.trim().toUpperCase();
+  if (params.secondaryUnit?.trim()) payload.secondary_unit = params.secondaryUnit.trim().toUpperCase();
+  if (params.conversionRate != null) payload.conversion_rate = params.conversionRate;
   if (categoryId?.trim()) payload.category_id = categoryId.trim();
   if (asOfDate?.trim()) payload.as_of_date = asOfDate.trim();
   if (atPrice != null) payload.at_price = atPrice;
@@ -200,7 +206,7 @@ export async function createItem(params: CreateItemParams): Promise<Item> {
   const { data, error } = await supabase
     .from('items')
     .upsert(payload, { onConflict: 'id' })
-    .select('id, business_id, name, sku, selling_price, purchase_price, stock_quantity, low_stock_alert, unit, category_id, as_of_date, at_price, item_location, item_type, created_at')
+    .select('id, business_id, name, sku, selling_price, purchase_price, stock_quantity, low_stock_alert, unit, secondary_unit, conversion_rate, category_id, as_of_date, at_price, item_location, item_type, created_at')
     .single();
 
   if (error) throw error;

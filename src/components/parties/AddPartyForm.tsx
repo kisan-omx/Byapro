@@ -102,6 +102,7 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
           className={`bg-surface border ${
             isNameFocused ? 'border-primary' : 'border-border'
           } rounded-xl px-4 pt-3 pb-3 text-base text-text font-medium`}
+          autoFocus={true}
         />
       </View>
 

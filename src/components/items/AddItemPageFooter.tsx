@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ADD_ITEM_CONSTANTS } from '../../constants/items';
 
@@ -26,42 +26,40 @@ export const AddItemPageFooter: React.FC<AddItemPageFooterProps> = ({
 
   return (
     <SafeAreaView edges={['bottom']} className="bg-surface border-t border-border">
-      <View className="flex-row items-center">
+      <View className="flex-row items-center justify-between bg-surface">
         {/* Cancel */}
-        <Pressable
+        <TouchableOpacity
           onPress={onCancel}
           disabled={loading}
-          className={`flex-1 py-4 items-center justify-center ${
-            loading ? 'opacity-50' : 'opacity-100'
-          } active:opacity-70 bg-surface`}
+          className={`flex-1 py-4 items-center justify-center bg-surface ${
+            loading ? 'opacity-50' : 'active:bg-slate-100'
+          }`}
+          activeOpacity={0.7}
           accessibilityLabel="Cancel"
         >
           <Text className="text-slate-600 text-base font-bold">
             {ADD_ITEM_CONSTANTS.BUTTONS.CANCEL}
           </Text>
-        </Pressable>
+        </TouchableOpacity>
 
         {/* Save */}
-        <Pressable
+        <TouchableOpacity
           onPress={onSave}
           disabled={saveDisabled}
-          className={`flex-1 py-4 items-center justify-center ${
-            saveDisabled ? 'bg-slate-200 opacity-100' : 'bg-primary active:bg-primary/90'
-          } active:opacity-80`}
+          className={`flex-1 py-4 bg-primary items-center justify-center ${
+            saveDisabled ? 'opacity-70' : 'active:bg-primary/90'
+          }`}
+          activeOpacity={0.8}
           accessibilityLabel="Save item"
         >
           {loading ? (
-            <ActivityIndicator color={saveDisabled ? '#94A3B8' : 'white'} />
+            <ActivityIndicator color="white" />
           ) : (
-            <Text
-              className={`text-base font-bold ${
-                saveDisabled ? 'text-slate-400' : 'text-white'
-              }`}
-            >
+            <Text className="text-white text-base font-bold">
               {ADD_ITEM_CONSTANTS.BUTTONS.SAVE}
             </Text>
           )}
-        </Pressable>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
