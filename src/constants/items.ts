@@ -23,20 +23,70 @@ export const STOCK_FILTER_OPTIONS: StockFilterOption[] = [
 // ─────────────────────────────────────────────────
 // Common Unit Options (for Add Item modal)
 // ─────────────────────────────────────────────────
-export const UNIT_OPTIONS: string[] = [
-  'PCS',
-  'KG',
-  'GM',
-  'LTR',
-  'ML',
-  'BTL',
-  'BOX',
-  'PKT',
-  'BAG',
-  'MTR',
-  'FT',
-  'DOZEN',
+export interface UnitOption {
+  name: string;
+  shortName: string;
+}
+
+export const UNIT_CONFIG_OPTIONS: UnitOption[] = [
+  { name: 'KILOMETER', shortName: 'Kmt' },
+  { name: 'UNIT', shortName: 'Umit' },
+  { name: 'BOTTLE', shortName: 'Btl' },
+  { name: 'HOUR', shortName: 'Hur' },
+  { name: 'PIECES', shortName: 'Pcs' },
+  { name: 'ROLL', shortName: 'Rol' },
+  { name: 'NUMBERS', shortName: 'Nos' },
+  { name: 'TABLESPOON', shortName: 'Tbs' },
+  { name: 'MILLILITRE', shortName: 'Ml' },
+  { name: 'SET', shortName: 'Set' },
+  { name: 'SQUARE FEET', shortName: 'Sqf' },
+  { name: 'LITRE', shortName: 'Ltr' },
+  { name: 'DOZENS', shortName: 'Dzn' },
+  { name: 'PACKS', shortName: 'Pac' },
+  { name: 'TON', shortName: 'Ton' },
+  { name: 'METRE', shortName: 'Mtr' },
+  { name: 'CARTON', shortName: 'Ctn' },
+  { name: 'CUBIC METRE', shortName: 'Mtq' },
+  { name: 'KILOGRAM', shortName: 'Kg' },
+  { name: 'QUINTAL', shortName: 'Qtl' },
+  { name: 'PAIRS', shortName: 'Prs' },
+  { name: 'SERVICE', shortName: 'Ser' },
+  { name: 'BUNDLE', shortName: 'Bdl' },
+  { name: 'BOX', shortName: 'Box' },
+  { name: 'SQUARE METERS', shortName: 'Sqm' },
+  { name: 'BAGS', shortName: 'Bag' },
+  { name: 'CANS', shortName: 'Can' },
+  { name: 'GRAMMES', shortName: 'Gm' },
+  { name: 'DAY', shortName: 'Day' },
 ];
+
+export const UNIT_OPTIONS: string[] = UNIT_CONFIG_OPTIONS.map((u) => u.name);
+
+/** Helper to get short name for any unit string (e.g. "CANS" -> "Can") */
+export function getUnitShortName(unitName?: string | null): string {
+  if (!unitName) return '';
+  const trimmed = unitName.trim().toUpperCase();
+  const match = UNIT_CONFIG_OPTIONS.find((u) => u.name.toUpperCase() === trimmed);
+  if (match) return match.shortName;
+  return unitName;
+}
+
+/** Dynamically register a new custom unit with its short name */
+export function registerCustomUnit(fullName: string, shortName: string): void {
+  const full = fullName.trim().toUpperCase();
+  const short = shortName.trim() || full;
+  if (full) {
+    const existing = UNIT_CONFIG_OPTIONS.find((u) => u.name.toUpperCase() === full);
+    if (!existing) {
+      UNIT_CONFIG_OPTIONS.push({ name: full, shortName: short });
+      if (!UNIT_OPTIONS.includes(full)) {
+        UNIT_OPTIONS.push(full);
+      }
+    } else {
+      existing.shortName = short;
+    }
+  }
+}
 
 // ─────────────────────────────────────────────────
 // Stock Status Visual Config
@@ -83,6 +133,9 @@ export const ADD_ITEM_CONSTANTS = {
   FORM_LABELS: {
     ITEM_NAME: 'Item Name',
     SELECT_UNIT: 'Select Unit',
+    SELECT_UNIT_TITLE: 'Select Measuring Unit',
+    PRIMARY_UNIT: 'Primary Unit',
+    SECONDARY_UNIT: 'Secondary Unit',
     SELLING_PRICE: 'Selling Price',
     PURCHASE_PRICE: 'Purchase Price',
     OPENING_STOCK: 'Opening Stock',

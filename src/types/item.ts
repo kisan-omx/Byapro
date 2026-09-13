@@ -19,6 +19,8 @@ export interface Item {
   stockQuantity: number;
   lowStockAlert?: number | null;
   unit?: string | null;
+  secondaryUnit?: string | null;
+  conversionRate?: number | null;
   categoryId?: string | null;
   asOfDate?: string | null;
   atPrice?: number | null;
@@ -38,6 +40,8 @@ export interface AddItemFormData {
   sellingPrice: string;
   purchasePrice?: string;
   unit?: string;
+  secondaryUnit?: string;
+  conversionRate?: string;
   stockQuantity?: string;
   lowStockAlert?: string;
   sku?: string;

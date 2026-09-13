@@ -227,6 +227,7 @@ export function useItems() {
             sellingPrice: item.sellingPrice,
             purchasePrice: item.purchasePrice ?? undefined,
             unit: item.unit ?? undefined,
+            secondaryUnit: item.secondaryUnit ?? undefined,
             stockQuantity: item.stockQuantity,
             lowStockAlert: item.lowStockAlert ?? undefined,
             sku: item.sku ?? undefined,

@@ -15,6 +15,8 @@ export interface AddItemFormState {
   sellingPrice: string;
   purchasePrice: string;
   unit: string;
+  secondaryUnit: string;
+  conversionRate: string;
   categoryId: string;
   categoryName: string;
   stockQuantity: string;
@@ -35,6 +37,8 @@ const INITIAL_FORM: AddItemFormState = {
   sellingPrice: '',
   purchasePrice: '',
   unit: '',
+  secondaryUnit: '',
+  conversionRate: '',
   categoryId: '',
   categoryName: '',
   stockQuantity: '',
@@ -90,11 +94,16 @@ export function useAddItem() {
   const closeUnitModal = useCallback(() => setIsUnitModalVisible(false), []);
 
   const handleSelectUnit = useCallback(
-    (unit: string) => {
-      setUnit(unit === form.unit ? '' : unit);
+    (unit: string, secondaryUnit: string, conversionRate?: string) => {
+      setForm((prev) => ({
+        ...prev,
+        unit,
+        secondaryUnit,
+        conversionRate: conversionRate ?? prev.conversionRate,
+      }));
       setIsUnitModalVisible(false);
     },
-    [form.unit, setUnit],
+    [],
   );
 
   // Whether the form has minimum required data to enable Save
@@ -113,6 +122,7 @@ export function useAddItem() {
     const tempId = generateUUID();
     const qty = form.stockQuantity.trim() ? parseFloat(form.stockQuantity) : 0;
     const lowAlert = form.lowStockAlert.trim() ? parseFloat(form.lowStockAlert) : null;
+    const convRate = form.conversionRate.trim() ? parseFloat(form.conversionRate) : null;
 
     let stockStatus: Item['stockStatus'] = 'in_stock';
     if (qty <= 0) stockStatus = 'out_of_stock';
@@ -133,6 +143,8 @@ export function useAddItem() {
       lowStockAlert: lowAlert,
       itemLocation: form.itemLocation.trim() || null,
       unit: form.unit.trim().toUpperCase() || null,
+      secondaryUnit: form.secondaryUnit.trim().toUpperCase() || null,
+      conversionRate: convRate,
       categoryId: form.categoryId || null,
       itemType: form.itemType,
       createdAt: new Date().toISOString(),
@@ -158,6 +170,8 @@ export function useAddItem() {
           sellingPrice: sp,
           purchasePrice: form.purchasePrice.trim() ? parseFloat(form.purchasePrice) : undefined,
           unit: form.unit.trim() || undefined,
+          secondaryUnit: form.secondaryUnit.trim() || undefined,
+          conversionRate: convRate ?? undefined,
           categoryId: form.categoryId || undefined,
           stockQuantity: form.stockQuantity.trim() ? parseFloat(form.stockQuantity) : undefined,
           asOfDate: form.asOfDate || undefined,

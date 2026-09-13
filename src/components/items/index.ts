@@ -35,6 +35,9 @@ export type { AddItemNameFieldProps } from './AddItemNameField';
 export { AddItemUnitModal } from './AddItemUnitModal';
 export type { AddItemUnitModalProps } from './AddItemUnitModal';
 
+export { SelectUnitModal } from './SelectUnitModal';
+export type { SelectUnitModalProps } from './SelectUnitModal';
+
 export { AddItemPriceFields } from './AddItemPriceFields';
 export type { AddItemPriceFieldsProps } from './AddItemPriceFields';
 

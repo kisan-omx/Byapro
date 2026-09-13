@@ -225,6 +225,7 @@ export default function ReusableTransactionForm({
               placeholder={isPartyRequired ? `Enter ${partyLabel}` : 'Billing Name (Optional)'}
               placeholderTextColor="#94A3B8"
               className="flex-1 text-base font-medium text-text py-2 p-0"
+              autoFocus={true}
             />
             <TouchableOpacity
               onPress={onPartyPress}
