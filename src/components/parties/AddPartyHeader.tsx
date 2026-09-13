@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { ADD_PARTY_CONSTANTS } from '../../constants/addPartyConstants';
+import React from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { ADD_PARTY_CONSTANTS } from "../../constants/addPartyConstants";
 
 export interface AddPartyHeaderProps {
   onBack: () => void;
@@ -25,7 +25,10 @@ export const AddPartyHeader: React.FC<AddPartyHeaderProps> = ({
       </TouchableOpacity>
 
       {/* Header Title (Centered / Left Aligned) */}
-      <Text className="flex-1 ml-3 text-lg font-bold text-text" numberOfLines={1}>
+      <Text
+        className="flex-1 ml-3 text-lg font-bold text-text"
+        numberOfLines={1}
+      >
         {title}
       </Text>
 

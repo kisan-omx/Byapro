@@ -53,7 +53,9 @@ export function DashboardGraphic() {
         {/* Right Back Card: Reports */}
         <View className="absolute right-0 top-0 w-[85%] sm:w-[88%] h-full bg-surface rounded-2xl p-3 sm:p-4 shadow-md border border-border/80 flex-col justify-between">
           <View className="flex-row items-center justify-between">
-            <Text className="text-xs sm:text-sm font-extrabold text-[#D97706]">Reports</Text>
+            <Text className="text-xs sm:text-sm font-extrabold text-[#D97706]">
+              Reports
+            </Text>
             {/* Pie chart illustration */}
             <View className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-error/20 items-center justify-center border border-error/30">
               <View className="w-3 h-3 rounded-tr-full bg-error" />
@@ -63,30 +65,62 @@ export function DashboardGraphic() {
           {/* Mini Table Preview */}
           <View className="w-full mt-1">
             <View className="flex-row justify-between bg-[#DC2626]/10 p-1 px-1.5 rounded mb-1">
-              <Text className="text-[8px] sm:text-[9px] font-bold text-text-secondary">Party</Text>
-              <Text className="text-[8px] sm:text-[9px] font-bold text-text-secondary">Total Amount</Text>
-              <Text className="text-[8px] sm:text-[9px] font-bold text-text-secondary">Paid</Text>
-              <Text className="text-[8px] sm:text-[9px] font-bold text-text-secondary">Balance</Text>
+              <Text className="text-[8px] sm:text-[9px] font-bold text-text-secondary">
+                Party
+              </Text>
+              <Text className="text-[8px] sm:text-[9px] font-bold text-text-secondary">
+                Total Amount
+              </Text>
+              <Text className="text-[8px] sm:text-[9px] font-bold text-text-secondary">
+                Paid
+              </Text>
+              <Text className="text-[8px] sm:text-[9px] font-bold text-text-secondary">
+                Balance
+              </Text>
             </View>
 
             <View className="space-y-1">
               <View className="flex-row justify-between items-center py-0.5">
-                <Text className="text-[8px] sm:text-[9px] font-semibold text-text">Ramesh</Text>
-                <Text className="text-[8px] sm:text-[9px] text-text-secondary">₹ 5,601</Text>
-                <Text className="text-[8px] sm:text-[9px] text-text-secondary">₹ 300</Text>
-                <Text className="text-[8px] sm:text-[9px] font-bold text-secondary">↑ ₹ 5,301</Text>
+                <Text className="text-[8px] sm:text-[9px] font-semibold text-text">
+                  Ramesh
+                </Text>
+                <Text className="text-[8px] sm:text-[9px] text-text-secondary">
+                  ₹ 5,601
+                </Text>
+                <Text className="text-[8px] sm:text-[9px] text-text-secondary">
+                  ₹ 300
+                </Text>
+                <Text className="text-[8px] sm:text-[9px] font-bold text-secondary">
+                  ↑ ₹ 5,301
+                </Text>
               </View>
               <View className="flex-row justify-between items-center py-0.5 border-t border-border/40">
-                <Text className="text-[8px] sm:text-[9px] font-semibold text-text">Suresh</Text>
-                <Text className="text-[8px] sm:text-[9px] text-text-secondary">₹ 11,206</Text>
-                <Text className="text-[8px] sm:text-[9px] text-text-secondary">₹ 6,000</Text>
-                <Text className="text-[8px] sm:text-[9px] font-bold text-secondary">↑ ₹ 5,206</Text>
+                <Text className="text-[8px] sm:text-[9px] font-semibold text-text">
+                  Suresh
+                </Text>
+                <Text className="text-[8px] sm:text-[9px] text-text-secondary">
+                  ₹ 11,206
+                </Text>
+                <Text className="text-[8px] sm:text-[9px] text-text-secondary">
+                  ₹ 6,000
+                </Text>
+                <Text className="text-[8px] sm:text-[9px] font-bold text-secondary">
+                  ↑ ₹ 5,206
+                </Text>
               </View>
               <View className="flex-row justify-between items-center py-0.5 border-t border-border/40">
-                <Text className="text-[8px] sm:text-[9px] font-semibold text-text">Mahesh</Text>
-                <Text className="text-[8px] sm:text-[9px] text-text-secondary">₹ 25,212</Text>
-                <Text className="text-[8px] sm:text-[9px] text-text-secondary">₹ 3,210</Text>
-                <Text className="text-[8px] sm:text-[9px] font-bold text-secondary">↑ ₹ 22,002</Text>
+                <Text className="text-[8px] sm:text-[9px] font-semibold text-text">
+                  Mahesh
+                </Text>
+                <Text className="text-[8px] sm:text-[9px] text-text-secondary">
+                  ₹ 25,212
+                </Text>
+                <Text className="text-[8px] sm:text-[9px] text-text-secondary">
+                  ₹ 3,210
+                </Text>
+                <Text className="text-[8px] sm:text-[9px] font-bold text-secondary">
+                  ↑ ₹ 22,002
+                </Text>
               </View>
             </View>
           </View>
@@ -100,7 +134,9 @@ export function DashboardGraphic() {
         {/* Left Front Card: Profit */}
         <View className="absolute left-0 top-3 w-[55%] sm:w-[58%] bg-surface rounded-2xl p-3 sm:p-4 shadow-xl border border-border/90 z-10 flex-col justify-between">
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-xs sm:text-sm font-black text-error">Profit</Text>
+            <Text className="text-xs sm:text-sm font-black text-error">
+              Profit
+            </Text>
             <Feather name="trending-up" size={16} color="#DC2626" />
           </View>
 
@@ -136,8 +172,12 @@ export function DashboardGraphic() {
             <Text className="text-sm sm:text-base font-black text-text mb-1">
               {m.amount}
             </Text>
-            <View className={`self-start px-2 py-0.5 rounded-full ${m.badgeBg}`}>
-              <Text className={`text-[8px] sm:text-[9px] font-bold ${m.badgeText}`}>
+            <View
+              className={`self-start px-2 py-0.5 rounded-full ${m.badgeBg}`}
+            >
+              <Text
+                className={`text-[8px] sm:text-[9px] font-bold ${m.badgeText}`}
+              >
                 {m.change}
               </Text>
             </View>

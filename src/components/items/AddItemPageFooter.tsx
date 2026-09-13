@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ADD_ITEM_CONSTANTS } from '../../constants/items';
+import React from "react";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ADD_ITEM_CONSTANTS } from "../../constants/items";
 
 export interface AddItemPageFooterProps {
   onCancel: () => void;
@@ -25,14 +25,17 @@ export const AddItemPageFooter: React.FC<AddItemPageFooterProps> = ({
   const saveDisabled = loading || disabled;
 
   return (
-    <SafeAreaView edges={['bottom']} className="bg-surface border-t border-border">
+    <SafeAreaView
+      edges={["bottom"]}
+      className="bg-surface border-t border-border"
+    >
       <View className="flex-row items-center justify-between bg-surface">
         {/* Cancel */}
         <TouchableOpacity
           onPress={onCancel}
           disabled={loading}
           className={`flex-1 py-4 items-center justify-center bg-surface ${
-            loading ? 'opacity-50' : 'active:bg-slate-100'
+            loading ? "opacity-50" : "active:bg-slate-100"
           }`}
           activeOpacity={0.7}
           accessibilityLabel="Cancel"
@@ -47,7 +50,7 @@ export const AddItemPageFooter: React.FC<AddItemPageFooterProps> = ({
           onPress={onSave}
           disabled={saveDisabled}
           className={`flex-1 py-4 bg-primary items-center justify-center ${
-            saveDisabled ? 'opacity-70' : 'active:bg-primary/90'
+            saveDisabled ? "opacity-70" : "active:bg-primary/90"
           }`}
           activeOpacity={0.8}
           accessibilityLabel="Save item"

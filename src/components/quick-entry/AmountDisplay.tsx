@@ -1,5 +1,5 @@
-import { View, Text } from 'react-native';
-import { useState, useEffect } from 'react';
+import { View, Text } from "react-native";
+import { useState, useEffect } from "react";
 
 interface AmountDisplayProps {
   amount: string;
@@ -7,7 +7,11 @@ interface AmountDisplayProps {
   error?: string | null;
 }
 
-export default function AmountDisplay({ amount, liveResult, error }: AmountDisplayProps) {
+export default function AmountDisplay({
+  amount,
+  liveResult,
+  error,
+}: AmountDisplayProps) {
   const [cursorVisible, setCursorVisible] = useState(true);
 
   useEffect(() => {
@@ -19,46 +23,50 @@ export default function AmountDisplay({ amount, liveResult, error }: AmountDispl
 
   const formatNumberWithCommas = (str: string) => {
     return str.replace(/[\d.]+/g, (match) => {
-      const parts = match.split('.');
-      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-      return parts.join('.');
+      const parts = match.split(".");
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return parts.join(".");
     });
   };
 
   // Format the amount for display
   // Add commas to numbers, replace * with × and / with ÷
-  const displayAmount = formatNumberWithCommas(amount || '').replace(/\*/g, '×').replace(/\//g, '÷');
-  const displayLiveResult = liveResult ? formatNumberWithCommas(liveResult) : '';
+  const displayAmount = formatNumberWithCommas(amount || "")
+    .replace(/\*/g, "×")
+    .replace(/\//g, "÷");
+  const displayLiveResult = liveResult
+    ? formatNumberWithCommas(liveResult)
+    : "";
 
   return (
     <View className="px-4 py-4 flex-1 bg-surface">
-      <View className={`h-[160px] border rounded-2xl justify-end items-end p-6 ${
-        error ? 'border-error' : 'border-border'
-      }`}>
+      <View
+        className={`h-[160px] border rounded-2xl justify-end items-end p-6 ${
+          error ? "border-error" : "border-border"
+        }`}
+      >
         <View className="flex-row items-center">
-          <Text 
+          <Text
             className="text-text font-semibold"
             style={{ fontSize: 40 }}
             numberOfLines={1}
             adjustsFontSizeToFit
           >
-            {displayAmount || '0'}
+            {displayAmount || "0"}
           </Text>
-          <View 
-            className="w-[1.5px] h-9 bg-primary ml-1 rounded-full" 
-            style={{ opacity: cursorVisible ? 1 : 0 }} 
+          <View
+            className="w-[1.5px] h-9 bg-primary ml-1 rounded-full"
+            style={{ opacity: cursorVisible ? 1 : 0 }}
           />
         </View>
-        
+
         {displayLiveResult ? (
           <Text className="text-text-secondary text-2xl font-medium mt-2">
             = {displayLiveResult}
           </Text>
         ) : null}
       </View>
-      {!!error && (
-        <Text className="text-error text-sm mt-1 ml-1">{error}</Text>
-      )}
+      {!!error && <Text className="text-error text-sm mt-1 ml-1">{error}</Text>}
     </View>
   );
 }

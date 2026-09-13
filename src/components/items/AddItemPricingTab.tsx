@@ -1,6 +1,6 @@
-import React from 'react';
-import { View } from 'react-native';
-import { AddItemBaseField } from './AddItemBaseField';
+import React from "react";
+import { View } from "react-native";
+import { AddItemBaseField } from "./AddItemBaseField";
 
 export interface AddItemPricingTabProps {
   sellingPrice: string;

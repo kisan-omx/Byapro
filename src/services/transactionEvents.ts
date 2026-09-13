@@ -1,8 +1,14 @@
-import { TransactionItem } from '../types/transaction';
+import { TransactionItem } from "../types/transaction";
 
 type TransactionCreatedListener = (item: TransactionItem) => void;
-type TransactionSavedListener = (data: { tempId: string; realItem?: TransactionItem }) => void;
-type TransactionFailedListener = (data: { tempId: string; errorMsg?: string }) => void;
+type TransactionSavedListener = (data: {
+  tempId: string;
+  realItem?: TransactionItem;
+}) => void;
+type TransactionFailedListener = (data: {
+  tempId: string;
+  errorMsg?: string;
+}) => void;
 type TransactionRetryListener = (item: TransactionItem) => void;
 
 const createdListeners = new Set<TransactionCreatedListener>();
@@ -41,7 +47,7 @@ export const transactionEvents = {
       try {
         listener(item);
       } catch (err) {
-        console.error('Error in transaction onCreated listener:', err);
+        console.error("Error in transaction onCreated listener:", err);
       }
     });
   },
@@ -52,7 +58,7 @@ export const transactionEvents = {
       try {
         listener({ tempId, realItem });
       } catch (err) {
-        console.error('Error in transaction onSaved listener:', err);
+        console.error("Error in transaction onSaved listener:", err);
       }
     });
   },
@@ -63,7 +69,7 @@ export const transactionEvents = {
       try {
         listener({ tempId, errorMsg });
       } catch (err) {
-        console.error('Error in transaction onFailed listener:', err);
+        console.error("Error in transaction onFailed listener:", err);
       }
     });
   },
@@ -74,7 +80,7 @@ export const transactionEvents = {
       try {
         listener(item);
       } catch (err) {
-        console.error('Error in transaction onRetry listener:', err);
+        console.error("Error in transaction onRetry listener:", err);
       }
     });
   },

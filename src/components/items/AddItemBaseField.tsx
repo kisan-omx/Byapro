@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, TextInputProps, ViewStyle } from 'react-native';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TextInputProps,
+  ViewStyle,
+} from "react-native";
 
 export interface AddItemBaseFieldProps extends TextInputProps {
   label: string;
@@ -31,17 +38,17 @@ export const AddItemBaseField: React.FC<AddItemBaseFieldProps> = ({
     <View style={[containerStyle, style]} className={className}>
       <View
         className={`flex-row items-center border rounded-xl px-3 bg-surface ${
-          isFocused ? 'border-primary' : 'border-border'
+          isFocused ? "border-primary" : "border-border"
         }`}
         style={{ height: 60 }}
       >
         {/* Label + Input stacked vertically */}
         <View className="flex-1 justify-center" style={{ height: 60 }}>
           {/* Label — only show at top if focused or has value */}
-          {(isFocused || textInputProps.value) ? (
+          {isFocused || textInputProps.value ? (
             <Text
               className={`text-xs font-medium ${
-                isFocused ? 'text-primary' : 'text-text-secondary'
+                isFocused ? "text-primary" : "text-text-secondary"
               }`}
               style={{ lineHeight: 14, marginBottom: 2 }}
             >
@@ -61,16 +68,16 @@ export const AddItemBaseField: React.FC<AddItemBaseFieldProps> = ({
               onBlur?.(e);
             }}
             placeholder={
-              (isFocused || textInputProps.value)
+              isFocused || textInputProps.value
                 ? textInputProps.placeholder
-                : label + (required ? ' *' : '')
+                : label + (required ? " *" : "")
             }
             placeholderTextColor="#94A3B8"
             className="text-sm font-medium text-text p-0 m-0"
             style={
-              (isFocused || textInputProps.value)
+              isFocused || textInputProps.value
                 ? { height: 24, lineHeight: 20 }
-                : { height: 60, textAlignVertical: 'center' }
+                : { height: 60, textAlignVertical: "center" }
             }
             {...textInputProps}
           />

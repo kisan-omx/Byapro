@@ -1,12 +1,6 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import React from "react";
+import { View, Text, Modal, TouchableOpacity, ScrollView } from "react-native";
+import { Feather } from "@expo/vector-icons";
 
 export interface CategoryFilterModalProps {
   visible: boolean;
@@ -46,7 +40,9 @@ export const CategoryFilterModal: React.FC<CategoryFilterModalProps> = ({
 
           {/* Title row */}
           <View className="flex-row items-center justify-between px-5 py-3 border-b border-border/60">
-            <Text className="text-base font-bold text-text">Filter by Category</Text>
+            <Text className="text-base font-bold text-text">
+              Filter by Category
+            </Text>
             <TouchableOpacity onPress={onClose} className="p-1">
               <Feather name="x" size={20} color="#475569" />
             </TouchableOpacity>
@@ -62,7 +58,8 @@ export const CategoryFilterModal: React.FC<CategoryFilterModalProps> = ({
                 Categories Coming Soon
               </Text>
               <Text className="text-xs font-medium text-text-secondary text-center px-4">
-                Category filtering will be available once item categories are set up.
+                Category filtering will be available once item categories are
+                set up.
               </Text>
             </View>
             <View className="h-8" />

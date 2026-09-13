@@ -1,11 +1,11 @@
-import React from 'react';
+import React from "react";
 import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
   TouchableOpacityProps,
-} from 'react-native';
-import { Feather } from '@expo/vector-icons';
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
 
 export interface PrimaryButtonProps extends TouchableOpacityProps {
   title: string;
@@ -23,11 +23,11 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   title,
   loading = false,
   disabled = false,
-  className = '',
-  textClassName = '',
+  className = "",
+  textClassName = "",
   iconName,
   iconSize = 18,
-  iconColor = '#FFFFFF',
+  iconColor = "#FFFFFF",
   renderIcon,
   onPress,
   ...props
@@ -38,7 +38,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
       onPress={onPress}
       disabled={disabled || loading}
       className={`bg-primary py-3.5 px-6 rounded-full items-center justify-center shadow-xs flex-row ${
-        disabled || loading ? 'opacity-60' : 'active:opacity-90'
+        disabled || loading ? "opacity-60" : "active:opacity-90"
       } ${className}`}
       {...props}
     >

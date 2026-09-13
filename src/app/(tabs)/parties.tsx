@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
   FlatList,
   ActivityIndicator,
   RefreshControl,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
-import { useParties } from '../../hooks/useParties';
+import { useParties } from "../../hooks/useParties";
 import {
   PartyHeader,
   PartyFilterTabs,
@@ -19,7 +19,7 @@ import {
   PaymentFilterModal,
   AddPartyModal,
   PartyBottomActions,
-} from '../../components/parties';
+} from "../../components/parties";
 
 export default function PartiesScreen() {
   const router = useRouter();
@@ -47,13 +47,13 @@ export default function PartiesScreen() {
 
   const handleSelectPaymentFilter = (filter: any) => {
     setPaymentFilter(filter);
-    if (filter !== 'all') {
-      setCategoryFilter('all');
+    if (filter !== "all") {
+      setCategoryFilter("all");
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
       {/* Top Header: Title, Settings Icon, Search Bar, Filter Button */}
       <PartyHeader
         searchQuery={searchQuery}
@@ -132,7 +132,7 @@ export default function PartiesScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={refresh}
-            colors={['#0EA5E9']}
+            colors={["#0EA5E9"]}
             tintColor="#0EA5E9"
           />
         }
@@ -140,9 +140,8 @@ export default function PartiesScreen() {
 
       {/* Bottom Action: "Add New Party" Centered Button in Primary Color (No Logo) */}
       <PartyBottomActions
-        onOpenAddPartyModal={() => router.push('/add-party')}
+        onOpenAddPartyModal={() => router.push("/add-party")}
       />
-
 
       {/* Payment Status Dropdown Modal */}
       <PaymentFilterModal

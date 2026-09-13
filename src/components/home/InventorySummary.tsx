@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text } from "react-native";
 
 export default function InventorySummary() {
   return (
@@ -14,11 +14,15 @@ export default function InventorySummary() {
       {/* Summary Boxes */}
       <View className="flex-row justify-between">
         <View className="w-[48%] bg-background p-3 rounded-lg">
-          <Text className="text-xs text-text-secondary mb-1 font-medium">Stock Value</Text>
+          <Text className="text-xs text-text-secondary mb-1 font-medium">
+            Stock Value
+          </Text>
           <Text className="text-base font-bold text-success">Rs 0.00</Text>
         </View>
         <View className="w-[48%] bg-background p-3 rounded-lg">
-          <Text className="text-xs text-text-secondary mb-1 font-medium">No. of Items</Text>
+          <Text className="text-xs text-text-secondary mb-1 font-medium">
+            No. of Items
+          </Text>
           <Text className="text-base font-bold text-text">5</Text>
         </View>
       </View>

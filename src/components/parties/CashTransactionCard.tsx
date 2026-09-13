@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import React from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export interface CashTransactionCardProps {
   onPress?: () => void;
@@ -14,7 +14,7 @@ export const CashTransactionCard: React.FC<CashTransactionCardProps> = ({
       activeOpacity={0.8}
       onPress={onPress}
       style={{
-        shadowColor: '#64748B',
+        shadowColor: "#64748B",
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.04,
         shadowRadius: 3,
@@ -25,7 +25,11 @@ export const CashTransactionCard: React.FC<CashTransactionCardProps> = ({
       <View className="flex-row items-center flex-1">
         {/* Primary Circle Icon */}
         <View className="w-10 h-10 rounded-full bg-primary items-center justify-center mr-3">
-          <MaterialCommunityIcons name="cash-multiple" size={20} color="#FFFFFF" />
+          <MaterialCommunityIcons
+            name="cash-multiple"
+            size={20}
+            color="#FFFFFF"
+          />
         </View>
 
         <View className="flex-1 justify-center">

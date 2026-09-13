@@ -21,13 +21,19 @@ export function InvoiceGraphic() {
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center -space-x-2">
             <View className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/20 border-2 border-surface items-center justify-center">
-              <Text className="text-xs sm:text-sm font-bold text-primary">AK</Text>
+              <Text className="text-xs sm:text-sm font-bold text-primary">
+                AK
+              </Text>
             </View>
             <View className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-secondary/20 border-2 border-surface items-center justify-center">
-              <Text className="text-xs sm:text-sm font-bold text-secondary">RS</Text>
+              <Text className="text-xs sm:text-sm font-bold text-secondary">
+                RS
+              </Text>
             </View>
             <View className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-warning/20 border-2 border-surface items-center justify-center">
-              <Text className="text-xs sm:text-sm font-bold text-warning">MG</Text>
+              <Text className="text-xs sm:text-sm font-bold text-warning">
+                MG
+              </Text>
             </View>
             <View className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-info/20 border-2 border-surface items-center justify-center">
               <Text className="text-xs sm:text-sm font-bold text-info">+5</Text>
@@ -42,13 +48,15 @@ export function InvoiceGraphic() {
       {/* Stacked Invoices Visual */}
       <View className="w-full max-w-[320px] sm:max-w-[400px] md:max-w-[460px] items-center justify-center relative h-52 sm:h-64 md:h-72">
         {/* Left Back Invoice Sheet */}
-        <View 
+        <View
           className="absolute w-[200px] sm:w-[250px] md:w-[280px] h-[170px] sm:h-[210px] md:h-[230px] bg-surface rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-border shadow-sm top-3 sm:top-4 -left-2 sm:-left-4"
           style={{ transform: [{ rotate: "-8deg" }] }}
         >
           <View className="flex-row justify-between items-center mb-2">
             <View className="w-12 sm:w-16 h-2 rounded bg-error/70" />
-            <Text className="text-[8px] sm:text-[10px] font-bold text-text-secondary">INVOICE</Text>
+            <Text className="text-[8px] sm:text-[10px] font-bold text-text-secondary">
+              INVOICE
+            </Text>
           </View>
           <View className="w-full h-1 bg-error/30 rounded mb-3" />
           <View className="space-y-1.5 sm:space-y-2 mb-3">
@@ -63,13 +71,15 @@ export function InvoiceGraphic() {
         </View>
 
         {/* Right Back Invoice Sheet */}
-        <View 
+        <View
           className="absolute w-[200px] sm:w-[250px] md:w-[280px] h-[170px] sm:h-[210px] md:h-[230px] bg-surface rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-border shadow-sm top-3 sm:top-4 -right-2 sm:-right-4"
           style={{ transform: [{ rotate: "8deg" }] }}
         >
           <View className="flex-row justify-between items-center mb-2">
             <View className="w-12 sm:w-16 h-2 rounded bg-secondary/70" />
-            <Text className="text-[8px] sm:text-[10px] font-bold text-text-secondary">INVOICE</Text>
+            <Text className="text-[8px] sm:text-[10px] font-bold text-text-secondary">
+              INVOICE
+            </Text>
           </View>
           <View className="w-full h-1 bg-secondary/30 rounded mb-3" />
           <View className="space-y-1.5 sm:space-y-2 mb-3">
@@ -89,9 +99,13 @@ export function InvoiceGraphic() {
             <View className="flex-row justify-between items-start mb-2">
               <View>
                 <View className="w-14 sm:w-20 h-2.5 sm:h-3 rounded bg-primary mb-1" />
-                <Text className="text-[8px] sm:text-[10px] text-text-secondary font-medium">INV-2026-001</Text>
+                <Text className="text-[8px] sm:text-[10px] text-text-secondary font-medium">
+                  INV-2026-001
+                </Text>
               </View>
-              <Text className="text-[11px] sm:text-xs font-black tracking-wider text-text">INVOICE</Text>
+              <Text className="text-[11px] sm:text-xs font-black tracking-wider text-text">
+                INVOICE
+              </Text>
             </View>
 
             {/* Top Banner accent */}
@@ -99,9 +113,15 @@ export function InvoiceGraphic() {
 
             {/* Table headers simulation */}
             <View className="flex-row justify-between py-1 border-b border-border/80 mb-2">
-              <Text className="text-[8px] sm:text-[10px] font-bold text-text-secondary">ITEM</Text>
-              <Text className="text-[8px] sm:text-[10px] font-bold text-text-secondary">QTY</Text>
-              <Text className="text-[8px] sm:text-[10px] font-bold text-text-secondary">AMOUNT</Text>
+              <Text className="text-[8px] sm:text-[10px] font-bold text-text-secondary">
+                ITEM
+              </Text>
+              <Text className="text-[8px] sm:text-[10px] font-bold text-text-secondary">
+                QTY
+              </Text>
+              <Text className="text-[8px] sm:text-[10px] font-bold text-text-secondary">
+                AMOUNT
+              </Text>
             </View>
 
             {/* Table rows */}

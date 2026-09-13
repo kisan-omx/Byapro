@@ -1,8 +1,11 @@
-import { useState, useCallback, useRef } from 'react';
-import { auth } from '../lib/firebase';
-import { getBusinessId } from '../services/quickEntryService';
-import { getItemCategories, createItemCategory } from '../services/categoryService';
-import { ItemCategory } from '../types/itemCategory';
+import { useState, useCallback, useRef } from "react";
+import { auth } from "../lib/firebase";
+import { getBusinessId } from "../services/quickEntryService";
+import {
+  getItemCategories,
+  createItemCategory,
+} from "../services/categoryService";
+import { ItemCategory } from "../types/itemCategory";
 
 // ─────────────────────────────────────────────────
 // useItemCategory hook
@@ -11,7 +14,7 @@ import { ItemCategory } from '../types/itemCategory';
 export function useItemCategory() {
   const [isVisible, setIsVisible] = useState(false);
   const [categories, setCategories] = useState<ItemCategory[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +36,7 @@ export function useItemCategory() {
       setCategories(list);
       hasFetchedRef.current = true;
     } catch (err: any) {
-      setError(err?.message ?? 'Failed to load categories');
+      setError(err?.message ?? "Failed to load categories");
     } finally {
       setLoading(false);
     }
@@ -41,7 +44,7 @@ export function useItemCategory() {
 
   const openModal = useCallback(() => {
     setIsVisible(true);
-    setSearchQuery('');
+    setSearchQuery("");
     // Only fetch once unless reset
     if (!hasFetchedRef.current) {
       fetchCategories();
@@ -50,7 +53,7 @@ export function useItemCategory() {
 
   const closeModal = useCallback(() => {
     setIsVisible(false);
-    setSearchQuery('');
+    setSearchQuery("");
   }, []);
 
   const openCreateModal = useCallback(() => {
@@ -69,15 +72,15 @@ export function useItemCategory() {
         setAdding(true);
         setError(null);
         const user = auth.currentUser;
-        if (!user) throw new Error('Not authenticated');
+        if (!user) throw new Error("Not authenticated");
         const businessId = await getBusinessId(user.uid);
-        if (!businessId) throw new Error('No business found');
+        if (!businessId) throw new Error("No business found");
         const created = await createItemCategory(businessId, trimmed);
         // Optimistically prepend to list
         setCategories((prev) => [created, ...prev]);
         return created;
       } catch (err: any) {
-        setError(err?.message ?? 'Failed to add category');
+        setError(err?.message ?? "Failed to add category");
         return null;
       } finally {
         setAdding(false);

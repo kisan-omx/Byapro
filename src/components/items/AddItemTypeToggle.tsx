@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { ADD_ITEM_CONSTANTS, ItemType } from '../../constants/items';
+import React from "react";
+import { View, Text, Pressable } from "react-native";
+import { ADD_ITEM_CONSTANTS, ItemType } from "../../constants/items";
 
 export interface AddItemTypeToggleProps {
   value: ItemType;
@@ -12,7 +12,10 @@ export interface AddItemTypeToggleProps {
  * Left pill = Product, Right pill = Services.
  * Active side gets the blue pill; inactive text is muted.
  */
-export const AddItemTypeToggle: React.FC<AddItemTypeToggleProps> = ({ value, onChange }) => {
+export const AddItemTypeToggle: React.FC<AddItemTypeToggleProps> = ({
+  value,
+  onChange,
+}) => {
   const types = ADD_ITEM_CONSTANTS.ITEM_TYPES;
 
   return (
@@ -26,14 +29,14 @@ export const AddItemTypeToggle: React.FC<AddItemTypeToggleProps> = ({ value, onC
               key={type.id}
               onPress={() => onChange(type.id)}
               className={`px-6 py-1.5 rounded-full ${
-                isActive ? 'bg-primary shadow-sm' : 'bg-transparent shadow-none'
+                isActive ? "bg-primary shadow-sm" : "bg-transparent shadow-none"
               } active:opacity-80`}
               accessibilityRole="button"
               accessibilityState={{ selected: isActive }}
             >
               <Text
                 className={`text-sm font-semibold ${
-                  isActive ? 'text-white' : 'text-text-secondary'
+                  isActive ? "text-white" : "text-text-secondary"
                 }`}
               >
                 {type.label}

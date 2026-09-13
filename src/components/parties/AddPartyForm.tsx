@@ -1,8 +1,14 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Keyboard } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { PartyType } from '../../types/party';
-import { ADD_PARTY_CONSTANTS } from '../../constants/addPartyConstants';
+import React, { useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Keyboard,
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { PartyType } from "../../types/party";
+import { ADD_PARTY_CONSTANTS } from "../../constants/addPartyConstants";
 
 export interface AddPartyFormProps {
   name: string;
@@ -11,15 +17,15 @@ export interface AddPartyFormProps {
   onPhoneChange: (val: string) => void;
   partyType: PartyType;
   onPartyTypeChange: (type: PartyType) => void;
-  activeTab: 'credit_info' | 'additional_details';
-  onTabChange: (tab: 'credit_info' | 'additional_details') => void;
+  activeTab: "credit_info" | "additional_details";
+  onTabChange: (tab: "credit_info" | "additional_details") => void;
   openingBalance: string;
   onOpeningBalanceChange: (val: string) => void;
   asOfDate: string;
   onAsOfDateChange: (val: string) => void;
   onOpenDatePicker: () => void;
-  balanceType: 'To Receive' | 'To Give';
-  onBalanceTypeChange: (val: 'To Receive' | 'To Give') => void;
+  balanceType: "To Receive" | "To Give";
+  onBalanceTypeChange: (val: "To Receive" | "To Give") => void;
   email: string;
   onEmailChange: (val: string) => void;
   address: string;
@@ -63,7 +69,7 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
   const showProgressiveFields = name.trim().length > 0;
 
   const handleTabPress = useCallback(
-    (tabId: 'credit_info' | 'additional_details') => {
+    (tabId: "credit_info" | "additional_details") => {
       Keyboard.dismiss();
       setIsBalanceFocused(false);
       setIsEmailFocused(false);
@@ -71,7 +77,7 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
       setIsNoteFocused(false);
       onTabChange(tabId);
     },
-    [onTabChange]
+    [onTabChange],
   );
 
   return (
@@ -79,15 +85,24 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
       {/* Error display if present */}
       {errorMsg && (
         <View className="bg-[#EF4444] rounded-2xl px-4 py-3 mb-4 flex-row items-center shadow-xs">
-          <Feather name="alert-circle" size={20} color="#FFFFFF" style={{ marginRight: 10 }} />
-          <Text className="text-sm font-semibold text-white flex-1">{errorMsg}</Text>
+          <Feather
+            name="alert-circle"
+            size={20}
+            color="#FFFFFF"
+            style={{ marginRight: 10 }}
+          />
+          <Text className="text-sm font-semibold text-white flex-1">
+            {errorMsg}
+          </Text>
         </View>
       )}
 
       {/* ── 1. Party Name Field (Outlined Floating Label with clearance gap) ── */}
       <View className="relative mb-5">
         <View className="absolute -top-2.5 left-3 z-10 bg-surface px-1.5">
-          <Text className={`text-xs font-bold ${isNameFocused ? 'text-primary' : 'text-text-secondary'}`}>
+          <Text
+            className={`text-xs font-bold ${isNameFocused ? "text-primary" : "text-text-secondary"}`}
+          >
             {ADD_PARTY_CONSTANTS.FORM_LABELS.PARTY_NAME}
           </Text>
         </View>
@@ -100,7 +115,7 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
           placeholder={ADD_PARTY_CONSTANTS.FORM_LABELS.PARTY_NAME_PLACEHOLDER}
           placeholderTextColor="#94A3B8"
           className={`bg-surface border ${
-            isNameFocused ? 'border-primary' : 'border-border'
+            isNameFocused ? "border-primary" : "border-border"
           } rounded-xl px-4 pt-3 pb-3 text-base text-text font-medium`}
           autoFocus={true}
         />
@@ -112,7 +127,9 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
           {/* ── 2. Phone Number Input (Outlined Floating Label) ────────── */}
           <View className="relative mb-4">
             <View className="absolute -top-2.5 left-3 z-10 bg-surface px-1.5">
-              <Text className={`text-xs font-bold ${isPhoneFocused ? 'text-primary' : 'text-text-secondary'}`}>
+              <Text
+                className={`text-xs font-bold ${isPhoneFocused ? "text-primary" : "text-text-secondary"}`}
+              >
                 {ADD_PARTY_CONSTANTS.FORM_LABELS.PHONE_NUMBER}
               </Text>
             </View>
@@ -123,10 +140,12 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
               onFocus={() => setIsPhoneFocused(true)}
               onBlur={() => setIsPhoneFocused(false)}
               keyboardType="phone-pad"
-              placeholder={ADD_PARTY_CONSTANTS.FORM_LABELS.PHONE_NUMBER_PLACEHOLDER}
+              placeholder={
+                ADD_PARTY_CONSTANTS.FORM_LABELS.PHONE_NUMBER_PLACEHOLDER
+              }
               placeholderTextColor="#94A3B8"
               className={`bg-surface border ${
-                isPhoneFocused ? 'border-primary' : 'border-border'
+                isPhoneFocused ? "border-primary" : "border-border"
               } rounded-xl px-4 pt-3 pb-3 text-base text-text font-medium`}
             />
           </View>
@@ -146,14 +165,14 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
                     onPress={() => onPartyTypeChange(role.id as PartyType)}
                     className={`flex-1 py-2.5 px-4 rounded-full border items-center justify-center ${
                       isSelected
-                        ? 'bg-primary border-primary'
-                        : 'bg-background border-border'
+                        ? "bg-primary border-primary"
+                        : "bg-background border-border"
                     }`}
                   >
                     <Text
                       numberOfLines={1}
                       className={`text-xs font-bold ${
-                        isSelected ? 'text-white' : 'text-text-secondary'
+                        isSelected ? "text-white" : "text-text-secondary"
                       }`}
                     >
                       {role.label}
@@ -172,14 +191,18 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
                 <TouchableOpacity
                   key={tab.id}
                   activeOpacity={0.7}
-                  onPress={() => handleTabPress(tab.id as 'credit_info' | 'additional_details')}
+                  onPress={() =>
+                    handleTabPress(
+                      tab.id as "credit_info" | "additional_details",
+                    )
+                  }
                   className={`flex-1 py-3 items-center justify-center ${
-                    isSelected ? 'border-b-2 border-primary' : ''
+                    isSelected ? "border-b-2 border-primary" : ""
                   }`}
                 >
                   <Text
                     className={`text-sm font-bold ${
-                      isSelected ? 'text-primary' : 'text-text-secondary'
+                      isSelected ? "text-primary" : "text-text-secondary"
                     }`}
                   >
                     {tab.label}
@@ -190,14 +213,16 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
           </View>
 
           {/* ── 5. Tab Body Views with Generous Spacing / Up Gap ───────── */}
-          {activeTab === 'credit_info' ? (
+          {activeTab === "credit_info" ? (
             <View className="pt-4 space-y-4">
               {/* Row: Opening Balance & As of Date */}
               <View className="flex-row items-center mb-4 gap-2.5">
                 {/* Opening Balance */}
                 <View className="flex-1 relative">
                   <View className="absolute -top-2.5 left-3 z-10 bg-surface px-1.5">
-                    <Text className={`text-[10px] font-bold ${isBalanceFocused ? 'text-primary' : 'text-text-secondary'}`}>
+                    <Text
+                      className={`text-[10px] font-bold ${isBalanceFocused ? "text-primary" : "text-text-secondary"}`}
+                    >
                       {ADD_PARTY_CONSTANTS.FORM_LABELS.OPENING_BALANCE}
                     </Text>
                   </View>
@@ -210,7 +235,7 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
                     placeholder="0.00"
                     placeholderTextColor="#94A3B8"
                     className={`bg-surface border ${
-                      isBalanceFocused ? 'border-primary' : 'border-border'
+                      isBalanceFocused ? "border-primary" : "border-border"
                     } rounded-xl px-3.5 pt-3.5 pb-3.5 text-base text-text font-medium`}
                   />
                 </View>
@@ -231,10 +256,18 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
                     </Text>
                   </View>
                   <View className="bg-surface border border-border rounded-xl px-3.5 pt-3.5 pb-3.5 flex-row items-center justify-between">
-                    <Text className="text-sm font-semibold text-text flex-1" numberOfLines={1}>
-                      {asOfDate || 'Select Date'}
+                    <Text
+                      className="text-sm font-semibold text-text flex-1"
+                      numberOfLines={1}
+                    >
+                      {asOfDate || "Select Date"}
                     </Text>
-                    <Feather name="calendar" size={16} color="#64748B" style={{ marginLeft: 4 }} />
+                    <Feather
+                      name="calendar"
+                      size={16}
+                      color="#64748B"
+                      style={{ marginLeft: 4 }}
+                    />
                   </View>
                 </TouchableOpacity>
               </View>
@@ -248,17 +281,19 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
                       <TouchableOpacity
                         key={bt.id}
                         activeOpacity={0.7}
-                        onPress={() => onBalanceTypeChange(bt.id as 'To Receive' | 'To Give')}
+                        onPress={() =>
+                          onBalanceTypeChange(bt.id as "To Receive" | "To Give")
+                        }
                         className={`px-6 py-2.5 rounded-full border items-center justify-center ${
                           isSelected
-                            ? 'bg-primary border-primary'
-                            : 'bg-background border-border'
+                            ? "bg-primary border-primary"
+                            : "bg-background border-border"
                         }`}
                       >
                         <Text
                           numberOfLines={1}
                           className={`text-xs font-bold text-center ${
-                            isSelected ? 'text-white' : 'text-text-secondary'
+                            isSelected ? "text-white" : "text-text-secondary"
                           }`}
                         >
                           {bt.label}
@@ -275,7 +310,9 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
               {/* Party Email Field */}
               <View className="relative mb-6">
                 <View className="absolute -top-2.5 left-3 z-10 bg-surface px-1.5">
-                  <Text className={`text-xs font-bold ${isEmailFocused ? 'text-primary' : 'text-text-secondary'}`}>
+                  <Text
+                    className={`text-xs font-bold ${isEmailFocused ? "text-primary" : "text-text-secondary"}`}
+                  >
                     {ADD_PARTY_CONSTANTS.FORM_LABELS.PARTY_EMAIL}
                   </Text>
                 </View>
@@ -286,10 +323,12 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
                   onBlur={() => setIsEmailFocused(false)}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  placeholder={ADD_PARTY_CONSTANTS.FORM_LABELS.PARTY_EMAIL_PLACEHOLDER}
+                  placeholder={
+                    ADD_PARTY_CONSTANTS.FORM_LABELS.PARTY_EMAIL_PLACEHOLDER
+                  }
                   placeholderTextColor="#94A3B8"
                   className={`bg-surface border ${
-                    isEmailFocused ? 'border-primary' : 'border-border'
+                    isEmailFocused ? "border-primary" : "border-border"
                   } rounded-xl px-4 pt-3.5 pb-3.5 text-base text-text font-medium`}
                 />
               </View>
@@ -297,7 +336,9 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
               {/* Party Address Field */}
               <View className="relative mb-6">
                 <View className="absolute -top-2.5 left-3 z-10 bg-surface px-1.5">
-                  <Text className={`text-xs font-bold ${isAddressFocused ? 'text-primary' : 'text-text-secondary'}`}>
+                  <Text
+                    className={`text-xs font-bold ${isAddressFocused ? "text-primary" : "text-text-secondary"}`}
+                  >
                     {ADD_PARTY_CONSTANTS.FORM_LABELS.PARTY_ADDRESS}
                   </Text>
                 </View>
@@ -306,10 +347,12 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
                   onChangeText={onAddressChange}
                   onFocus={() => setIsAddressFocused(true)}
                   onBlur={() => setIsAddressFocused(false)}
-                  placeholder={ADD_PARTY_CONSTANTS.FORM_LABELS.PARTY_ADDRESS_PLACEHOLDER}
+                  placeholder={
+                    ADD_PARTY_CONSTANTS.FORM_LABELS.PARTY_ADDRESS_PLACEHOLDER
+                  }
                   placeholderTextColor="#94A3B8"
                   className={`bg-surface border ${
-                    isAddressFocused ? 'border-primary' : 'border-border'
+                    isAddressFocused ? "border-primary" : "border-border"
                   } rounded-xl px-4 pt-3.5 pb-3.5 text-base text-text font-medium`}
                 />
               </View>
@@ -317,7 +360,9 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
               {/* Additional Notes Field */}
               <View className="relative mb-4">
                 <View className="absolute -top-2.5 left-3 z-10 bg-surface px-1.5">
-                  <Text className={`text-xs font-bold ${isNoteFocused ? 'text-primary' : 'text-text-secondary'}`}>
+                  <Text
+                    className={`text-xs font-bold ${isNoteFocused ? "text-primary" : "text-text-secondary"}`}
+                  >
                     {ADD_PARTY_CONSTANTS.FORM_LABELS.ADDITIONAL_NOTES}
                   </Text>
                 </View>
@@ -331,7 +376,7 @@ export const AddPartyForm: React.FC<AddPartyFormProps> = ({
                   multiline
                   numberOfLines={3}
                   className={`bg-surface border ${
-                    isNoteFocused ? 'border-primary' : 'border-border'
+                    isNoteFocused ? "border-primary" : "border-border"
                   } rounded-xl px-4 pt-3.5 pb-3.5 text-base text-text font-medium h-24 text-top`}
                 />
               </View>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -6,15 +6,15 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   ScrollView,
-} from 'react-native';
-import { TransactionType } from '../../types/transaction';
-import { TRANSACTION_TYPE_OPTIONS } from '../../constants/transactionConstants';
+} from "react-native";
+import { TransactionType } from "../../types/transaction";
+import { TRANSACTION_TYPE_OPTIONS } from "../../constants/transactionConstants";
 
 interface SelectTypeModalProps {
   visible: boolean;
   onClose: () => void;
-  selectedTypeFilter: TransactionType | 'All';
-  onSelectTypeFilter: (type: TransactionType | 'All') => void;
+  selectedTypeFilter: TransactionType | "All";
+  onSelectTypeFilter: (type: TransactionType | "All") => void;
   title?: string;
 }
 
@@ -23,10 +23,15 @@ export default function SelectTypeModal({
   onClose,
   selectedTypeFilter,
   onSelectTypeFilter,
-  title = 'Filter by Type',
+  title = "Filter by Type",
 }: SelectTypeModalProps) {
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+    >
       <TouchableWithoutFeedback onPress={onClose}>
         <View className="flex-1 bg-black/50 justify-end">
           <TouchableWithoutFeedback>
@@ -37,7 +42,10 @@ export default function SelectTypeModal({
               </View>
 
               {/* Scrollable List of Transaction Types */}
-              <ScrollView showsVerticalScrollIndicator={false} className="divide-y divide-border/20">
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                className="divide-y divide-border/20"
+              >
                 {TRANSACTION_TYPE_OPTIONS.map((opt) => {
                   const isSelected = selectedTypeFilter === opt.id;
 
@@ -54,7 +62,7 @@ export default function SelectTypeModal({
                       {/* Left: Option Title */}
                       <Text
                         className={`text-base font-bold ${
-                          isSelected ? 'text-text' : 'text-text/90'
+                          isSelected ? "text-text" : "text-text/90"
                         }`}
                       >
                         {opt.label}
@@ -63,10 +71,14 @@ export default function SelectTypeModal({
                       {/* Right: Radio Button Indicator */}
                       <View
                         className={`w-5 h-5 rounded-full border-2 items-center justify-center ${
-                          isSelected ? 'border-primary bg-transparent' : 'border-slate-300'
+                          isSelected
+                            ? "border-primary bg-transparent"
+                            : "border-slate-300"
                         }`}
                       >
-                        {isSelected && <View className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                        {isSelected && (
+                          <View className="w-2.5 h-2.5 rounded-full bg-primary" />
+                        )}
                       </View>
                     </TouchableOpacity>
                   );

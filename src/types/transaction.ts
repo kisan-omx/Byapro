@@ -1,16 +1,16 @@
 export type TransactionType =
-  | 'Sale'
-  | 'Purchase'
-  | 'PaymentIn'
-  | 'PaymentOut'
-  | 'Expense'
-  | 'SaleReturn'
-  | 'PurchaseReturn'
-  | 'Quotation';
+  | "Sale"
+  | "Purchase"
+  | "PaymentIn"
+  | "PaymentOut"
+  | "Expense"
+  | "SaleReturn"
+  | "PurchaseReturn"
+  | "Quotation";
 
-export type PaymentStatus = 'Paid' | 'Unpaid' | 'Partial' | 'N/A';
+export type PaymentStatus = "Paid" | "Unpaid" | "Partial" | "N/A";
 
-export type SyncStatus = 'saving' | 'saved' | 'failed';
+export type SyncStatus = "saving" | "saved" | "failed";
 
 export interface TransactionItem {
   id: string;
@@ -30,17 +30,17 @@ export interface TransactionItem {
 }
 
 export type DateFilterType =
-  | 'today'
-  | 'yesterday'
-  | 'this_week'
-  | 'this_month'
-  | 'last_month'
-  | 'this_fiscal_year'
-  | 'this_year'
-  | 'all';
+  | "today"
+  | "yesterday"
+  | "this_week"
+  | "this_month"
+  | "last_month"
+  | "this_fiscal_year"
+  | "this_year"
+  | "all";
 
 export interface TransactionFilter {
   searchQuery: string;
   dateFilter: DateFilterType;
-  typeFilter: TransactionType | 'All';
+  typeFilter: TransactionType | "All";
 }

@@ -1,13 +1,13 @@
-import { EntryType } from '../components/quick-entry/QuickEntryTabs';
+import { EntryType } from "../components/quick-entry/QuickEntryTabs";
 
 export type TransactionOptionId =
-  | 'sale'
-  | 'payment_in'
-  | 'sale_return'
-  | 'purchase'
-  | 'payment_out'
-  | 'purchase_return'
-  | 'expense';
+  | "sale"
+  | "payment_in"
+  | "sale_return"
+  | "purchase"
+  | "payment_out"
+  | "purchase_return"
+  | "expense";
 
 export interface TransactionCategoryOption {
   id: TransactionOptionId;

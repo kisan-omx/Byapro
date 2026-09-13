@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity } from 'react-native';
-import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { View, Text, TouchableOpacity } from "react-native";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
 
 export default function HomeHeader() {
   return (

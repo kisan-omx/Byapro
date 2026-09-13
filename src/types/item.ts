@@ -2,11 +2,11 @@
 // Item & Inventory Types
 // ─────────────────────────────────────────────────
 
-export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock';
+export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 
-export type StockFilterType = 'all' | StockStatus;
+export type StockFilterType = "all" | StockStatus;
 
-export type SyncStatus = 'saving' | 'synced' | 'failed';
+export type SyncStatus = "saving" | "synced" | "failed";
 
 /** Mirrors the `items` table in Supabase */
 export interface Item {
@@ -25,8 +25,13 @@ export interface Item {
   asOfDate?: string | null;
   atPrice?: number | null;
   itemLocation?: string | null;
-  itemType?: 'product' | 'service';
+  itemType?: "product" | "service";
+  /** Storage path in item-images bucket. Use getItemImageUrl(path) to display. */
+  imagePath?: string | null;
+  /** Local URI — used for optimistic display before sync. Not persisted to DB. */
+  imageUrl?: string | null;
   createdAt: string;
+  updatedAt: string;
   // Derived UI helpers
   stockStatus: StockStatus;
   avatarLetter: string;
@@ -48,7 +53,7 @@ export interface AddItemFormData {
 }
 
 /** Filters used in useItems hook */
-export type TypeFilterType = 'all' | string; // unit value e.g. 'BTL', 'KG', 'PCS'
+export type TypeFilterType = "all" | string; // unit value e.g. 'BTL', 'KG', 'PCS'
 
 export interface ItemsFilter {
   searchQuery: string;

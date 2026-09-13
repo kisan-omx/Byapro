@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,9 +8,9 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { registerCustomUnit } from '../../constants/items';
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { registerCustomUnit } from "../../constants/items";
 
 export interface SelectUnitModalProps {
   visible: boolean;
@@ -31,10 +31,10 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
   onClose,
   onAddNewUnit,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isAddingCustom, setIsAddingCustom] = useState(false);
-  const [fullNameInput, setFullNameInput] = useState('');
-  const [shortNameInput, setShortNameInput] = useState('');
+  const [fullNameInput, setFullNameInput] = useState("");
+  const [shortNameInput, setShortNameInput] = useState("");
 
   const filteredUnits = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -44,7 +44,7 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
 
   const handleSelect = (unit: string) => {
     onSelect(unit);
-    setSearchQuery('');
+    setSearchQuery("");
     setIsAddingCustom(false);
   };
 
@@ -57,10 +57,10 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
         onAddNewUnit(full, short);
       }
       onSelect(full);
-      setFullNameInput('');
-      setShortNameInput('');
+      setFullNameInput("");
+      setShortNameInput("");
       setIsAddingCustom(false);
-      setSearchQuery('');
+      setSearchQuery("");
     }
   };
 
@@ -72,7 +72,7 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
         <TouchableOpacity
@@ -83,7 +83,7 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
           <TouchableOpacity
             activeOpacity={1}
             className="bg-surface rounded-t-3xl max-h-[85%]"
-            style={{ maxWidth: 640, width: '100%', alignSelf: 'center' }}
+            style={{ maxWidth: 640, width: "100%", alignSelf: "center" }}
             onPress={(e) => e.stopPropagation()}
           >
             {/* Handle Bar */}
@@ -93,8 +93,14 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
 
             {/* Header Title */}
             <View className="flex-row items-center justify-between px-5 pt-2 pb-3">
-              <Text className="text-lg font-bold text-text flex-1">{title}</Text>
-              <TouchableOpacity onPress={onClose} className="p-1" accessibilityLabel="Close">
+              <Text className="text-lg font-bold text-text flex-1">
+                {title}
+              </Text>
+              <TouchableOpacity
+                onPress={onClose}
+                className="p-1"
+                accessibilityLabel="Close"
+              >
                 <Feather name="x" size={22} color="#475569" />
               </TouchableOpacity>
             </View>
@@ -113,7 +119,7 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
                   className="flex-1 ml-2 text-sm font-medium text-text p-0"
                 />
                 {searchQuery ? (
-                  <TouchableOpacity onPress={() => setSearchQuery('')}>
+                  <TouchableOpacity onPress={() => setSearchQuery("")}>
                     <Feather name="x" size={16} color="#94A3B8" />
                   </TouchableOpacity>
                 ) : null}
@@ -138,7 +144,7 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
                   >
                     <Text
                       className={`text-base font-semibold tracking-wide ${
-                        isSelected ? 'text-primary' : 'text-text'
+                        isSelected ? "text-primary" : "text-text"
                       }`}
                     >
                       {unit}
@@ -148,8 +154,8 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
                     <View
                       className={`w-5 h-5 rounded-full items-center justify-center ${
                         isSelected
-                          ? 'border-2 border-primary bg-surface'
-                          : 'border border-slate-300'
+                          ? "border-2 border-primary bg-surface"
+                          : "border border-slate-300"
                       }`}
                     >
                       {isSelected ? (
@@ -194,7 +200,7 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
         onRequestClose={() => setIsAddingCustom(false)}
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           className="flex-1"
         >
           <TouchableOpacity
@@ -205,7 +211,7 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
             <TouchableOpacity
               activeOpacity={1}
               className="bg-surface rounded-2xl p-6 shadow-xl"
-              style={{ maxWidth: 400, width: '100%', alignSelf: 'center' }}
+              style={{ maxWidth: 400, width: "100%", alignSelf: "center" }}
               onPress={(e) => e.stopPropagation()}
             >
               {/* Title */}
@@ -248,8 +254,8 @@ export const SelectUnitModal: React.FC<SelectUnitModalProps> = ({
               <View className="flex-row justify-end items-center">
                 <TouchableOpacity
                   onPress={() => {
-                    setFullNameInput('');
-                    setShortNameInput('');
+                    setFullNameInput("");
+                    setShortNameInput("");
                     setIsAddingCustom(false);
                   }}
                   className="mr-6 py-1 px-2"

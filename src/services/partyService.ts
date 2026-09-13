@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabase';
-import { Party, PartyPaymentFilter, PartyType } from '../types/party';
+import { supabase } from "../lib/supabase";
+import { Party, PartyPaymentFilter, PartyType } from "../types/party";
 
 export const PAGE_SIZE = 20;
 
@@ -8,7 +8,7 @@ export interface FetchPartiesParams {
   searchQuery?: string;
   page?: number;
   pageSize?: number;
-  type?: 'customer' | 'supplier' | 'both' | 'all';
+  type?: "customer" | "supplier" | "both" | "all";
   paymentFilter?: PartyPaymentFilter;
 }
 
@@ -17,21 +17,35 @@ export interface FetchPartiesResponse {
   hasMore: boolean;
 }
 
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Helper to format date string to Nepalese/Bikram Sambat or standard short format
  */
 function formatDateSubtitle(createdAt?: string, phone?: string | null): string {
   if (phone) return phone;
-  if (!createdAt) return 'No phone number';
+  if (!createdAt) return "No phone number";
   try {
     const d = new Date(createdAt);
-    const day = String(d.getDate()).padStart(2, '0');
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = String(d.getDate()).padStart(2, "0");
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     return `${d.getFullYear()} ${months[d.getMonth()]} ${day}`;
   } catch {
-    return 'No phone number';
+    return "No phone number";
   }
 }
 
@@ -57,21 +71,21 @@ export async function getParties({
   }
 
   let query = supabase
-    .from('parties')
-    .select('id, name, phone, type, created_at')
-    .eq('business_id', businessId)
-    .order('created_at', { ascending: false })
-    .order('id', { ascending: false })
+    .from("parties")
+    .select("id, name, phone, type, created_at")
+    .eq("business_id", businessId)
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
     .range(from, to);
 
-  if (type && type !== 'all') {
+  if (type && type !== "all") {
     query = query.or(`type.eq.${type},type.eq.both`);
   }
 
   const trimmed = searchQuery?.trim();
   if (trimmed) {
     // Sanitize search term to prevent PostgREST syntax errors with special chars
-    const sanitized = trimmed.replace(/[,()"\\]/g, '');
+    const sanitized = trimmed.replace(/[,()"\\]/g, "");
     if (sanitized) {
       query = query.or(`name.ilike.%${sanitized}%,phone.ilike.%${sanitized}%`);
     }
@@ -83,11 +97,11 @@ export async function getParties({
   const rawList = data || [];
   let parties: Party[] = rawList.map((p: any) => {
     const rawBalance = p.balance ?? 0;
-    let balanceType: 'To Receive' | 'To Give' | 'Settled' = 'Settled';
+    let balanceType: "To Receive" | "To Give" | "Settled" = "Settled";
     if (rawBalance > 0) {
-      balanceType = 'To Receive';
+      balanceType = "To Receive";
     } else if (rawBalance < 0) {
-      balanceType = 'To Give';
+      balanceType = "To Give";
     }
 
     return {
@@ -95,20 +109,20 @@ export async function getParties({
       name: p.name,
       phone: p.phone,
       subtitle: formatDateSubtitle(p.created_at, p.phone),
-      type: 'Party' as const,
+      type: "Party" as const,
       balance: Math.abs(rawBalance),
       balanceType,
       createdAt: p.created_at,
     };
   });
 
-  if (paymentFilter && paymentFilter !== 'all') {
-    if (paymentFilter === 'to_receive') {
-      parties = parties.filter((p) => p.balanceType === 'To Receive');
-    } else if (paymentFilter === 'to_give') {
-      parties = parties.filter((p) => p.balanceType === 'To Give');
-    } else if (paymentFilter === 'settled') {
-      parties = parties.filter((p) => p.balanceType === 'Settled');
+  if (paymentFilter && paymentFilter !== "all") {
+    if (paymentFilter === "to_receive") {
+      parties = parties.filter((p) => p.balanceType === "To Receive");
+    } else if (paymentFilter === "to_give") {
+      parties = parties.filter((p) => p.balanceType === "To Give");
+    } else if (paymentFilter === "settled") {
+      parties = parties.filter((p) => p.balanceType === "Settled");
     }
   }
 
@@ -129,13 +143,26 @@ export async function createNewParty(params: {
   address?: string;
   type?: PartyType;
   openingBalance?: number;
-  balanceType?: 'To Receive' | 'To Give' | 'Settled';
+  balanceType?: "To Receive" | "To Give" | "Settled";
 }): Promise<Party> {
-  const { id, businessId, name, phone, email, address, type = 'both', openingBalance = 0, balanceType = 'Settled' } = params;
+  const {
+    id,
+    businessId,
+    name,
+    phone,
+    email,
+    address,
+    type = "both",
+    openingBalance = 0,
+    balanceType = "Settled",
+  } = params;
 
   let signedBalance = 0;
   if (openingBalance > 0) {
-    signedBalance = balanceType === 'To Give' ? -Math.abs(openingBalance) : Math.abs(openingBalance);
+    signedBalance =
+      balanceType === "To Give"
+        ? -Math.abs(openingBalance)
+        : Math.abs(openingBalance);
   }
 
   const insertPayload: any = {
@@ -151,13 +178,16 @@ export async function createNewParty(params: {
   if (signedBalance !== 0) insertPayload.balance = signedBalance;
 
   let res = await supabase
-    .from('parties')
-    .upsert(insertPayload, { onConflict: 'id' })
-    .select('id, name, phone, type, created_at')
+    .from("parties")
+    .upsert(insertPayload, { onConflict: "id" })
+    .select("id, name, phone, type, created_at")
     .single();
 
   // If PostgREST returns missing column error (code PGRST204 or message mentioning column), fallback safely to core fields
-  if (res.error && (res.error.code === 'PGRST204' || res.error.message?.includes('column'))) {
+  if (
+    res.error &&
+    (res.error.code === "PGRST204" || res.error.message?.includes("column"))
+  ) {
     const fallbackPayload: any = {
       business_id: businessId,
       name: name.trim(),
@@ -166,9 +196,9 @@ export async function createNewParty(params: {
     };
     if (id) fallbackPayload.id = id;
     res = await supabase
-      .from('parties')
-      .upsert(fallbackPayload, { onConflict: 'id' })
-      .select('id, name, phone, type, created_at')
+      .from("parties")
+      .upsert(fallbackPayload, { onConflict: "id" })
+      .select("id, name, phone, type, created_at")
       .single();
   }
 
@@ -183,11 +213,16 @@ export async function createNewParty(params: {
     email: email?.trim() || null,
     address: address?.trim() || null,
     subtitle: formatDateSubtitle(data.created_at, data.phone),
-    type: 'Party',
+    type: "Party",
     balance: Math.abs(signedBalance),
-    balanceType: signedBalance > 0 ? 'To Receive' : signedBalance < 0 ? 'To Give' : 'Settled',
+    balanceType:
+      signedBalance > 0
+        ? "To Receive"
+        : signedBalance < 0
+          ? "To Give"
+          : "Settled",
     createdAt: data.created_at,
-    syncStatus: 'synced',
+    syncStatus: "synced",
   };
 }
 
@@ -201,12 +236,12 @@ export async function getOrCreateParty(
   party: { id: string; name: string; subtitle?: string; type?: string },
 ): Promise<string> {
   // If the party is already a confirmed Supabase party with a valid UUID
-  if (party.type === 'Party' && UUID_REGEX.test(party.id)) {
+  if (party.type === "Party" && UUID_REGEX.test(party.id)) {
     const { data: existing } = await supabase
-      .from('parties')
-      .select('id')
-      .eq('business_id', businessId)
-      .eq('id', party.id)
+      .from("parties")
+      .select("id")
+      .eq("business_id", businessId)
+      .eq("id", party.id)
       .maybeSingle();
 
     if (existing?.id) {
@@ -215,17 +250,17 @@ export async function getOrCreateParty(
   }
 
   const phone =
-    party.subtitle && party.subtitle !== 'No phone number'
-      ? party.subtitle.replace(/[^\d+]/g, '').trim()
+    party.subtitle && party.subtitle !== "No phone number"
+      ? party.subtitle.replace(/[^\d+]/g, "").trim()
       : null;
 
   // Try matching by phone first if available
   if (phone) {
     const { data: byPhone } = await supabase
-      .from('parties')
-      .select('id')
-      .eq('business_id', businessId)
-      .eq('phone', phone)
+      .from("parties")
+      .select("id")
+      .eq("business_id", businessId)
+      .eq("phone", phone)
       .maybeSingle();
 
     if (byPhone?.id) {
@@ -235,10 +270,10 @@ export async function getOrCreateParty(
 
   // Try matching by name
   const { data: byNameRows } = await supabase
-    .from('parties')
-    .select('id')
-    .eq('business_id', businessId)
-    .ilike('name', party.name.trim())
+    .from("parties")
+    .select("id")
+    .eq("business_id", businessId)
+    .ilike("name", party.name.trim())
     .limit(1);
 
   if (byNameRows && byNameRows.length > 0 && byNameRows[0]?.id) {
@@ -247,14 +282,14 @@ export async function getOrCreateParty(
 
   // Create new party in Supabase
   const { data: created, error } = await supabase
-    .from('parties')
+    .from("parties")
     .insert({
       business_id: businessId,
       name: party.name.trim(),
       phone: phone || null,
-      type: 'both',
+      type: "both",
     })
-    .select('id')
+    .select("id")
     .single();
 
   if (error) throw error;
@@ -264,27 +299,29 @@ export async function getOrCreateParty(
 /**
  * Checks if a party with the given name (case-insensitive) already exists for the business.
  */
-export async function checkPartyExistsByName(businessId: string, name: string): Promise<boolean> {
+export async function checkPartyExistsByName(
+  businessId: string,
+  name: string,
+): Promise<boolean> {
   const trimmed = name.trim();
   if (!trimmed || !businessId) return false;
 
   try {
     const { data, error } = await supabase
-      .from('parties')
-      .select('id')
-      .eq('business_id', businessId)
-      .ilike('name', trimmed)
+      .from("parties")
+      .select("id")
+      .eq("business_id", businessId)
+      .ilike("name", trimmed)
       .limit(1);
 
     if (error) {
-      console.error('Error checking existing party by name:', error);
+      console.error("Error checking existing party by name:", error);
       return false;
     }
 
     return Array.isArray(data) && data.length > 0;
   } catch (err) {
-    console.error('Error checking existing party by name:', err);
+    console.error("Error checking existing party by name:", err);
     return false;
   }
 }
-

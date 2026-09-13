@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -8,12 +8,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   useWindowDimensions,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+} from "react-native";
+import { useRouter } from "expo-router";
+import { Feather } from "@expo/vector-icons";
 
-import { useAddItem } from '../hooks/useAddItem';
-import { useItemCategory } from '../hooks/useItemCategory';
+import { useAddItem } from "../hooks/useAddItem";
+import { checkImageSizeAsync } from "../services/storageService";
+import { useItemCategory } from "../hooks/useItemCategory";
 import {
   AddItemPageHeader,
   AddItemTypeToggle,
@@ -26,13 +27,15 @@ import {
   AddItemStockTab,
   ItemCategoryModal,
   CreateItemCategoryModal,
-} from '../components/items';
-import type { AddItemTab } from '../components/items';
-import DatePickerModal from '../components/common/DatePickerModal';
+} from "../components/items";
+import type { AddItemTab } from "../components/items";
+import DatePickerModal from "../components/common/DatePickerModal";
+import ImagePickerModal from "../components/common/ImagePickerModal";
+import * as ImagePicker from "expo-image-picker";
 
 export default function AddItemScreen() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<AddItemTab>('pricing');
+  const [activeTab, setActiveTab] = useState<AddItemTab>("pricing");
   const { width } = useWindowDimensions();
   const isWide = width >= 640;
 
@@ -83,164 +86,236 @@ export default function AddItemScreen() {
     router.back();
   }, [resetForm, router]);
 
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+
+  const handleSelectGallery = async () => {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      alert("You've refused to allow this app to access your photos!");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      const isSizeValid = await checkImageSizeAsync(uri);
+      
+      if (!isSizeValid) {
+        alert("Image exceeds the maximum allowed size of 5 MB. Please choose a smaller image.");
+        return;
+      }
+
+      updateField("imageUri")(uri);
+      setIsImageModalVisible(false);
+    }
+  };
+
+  const handleSelectCamera = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (permissionResult.granted === false) {
+      alert("You've refused to allow this app to access your camera!");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      const isSizeValid = await checkImageSizeAsync(uri);
+      
+      if (!isSizeValid) {
+        alert("Image exceeds the maximum allowed size of 5 MB. Please choose a smaller image.");
+        return;
+      }
+
+      updateField("imageUri")(uri);
+      setIsImageModalVisible(false);
+    }
+  };
+
   const isNameEntered = form.name.trim().length > 0;
 
   return (
     <View className="flex-1 bg-surface">
-      <View style={{ flex: 1, maxWidth: 768, width: '100%', alignSelf: 'center' }}>
-      {/* ── Header: Back arrow · Title · Camera icon ── */}
-      <AddItemPageHeader
-        onBack={handleCancel}
-        onCamera={() => {
-          // Future: image picker
-        }}
-      />
-
-      {/* ── Keyboard Avoiding View ────────────────── */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-        className="flex-1"
-        keyboardVerticalOffset={0}
+      <View
+        style={{ flex: 1, maxWidth: 768, width: "100%", alignSelf: "center" }}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View className="flex-1">
-            {/* ── Product / Services Toggle ─────────────── */}
-            <AddItemTypeToggle value={form.itemType} onChange={setItemType} />
-            <ScrollView
-              className="flex-1"
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
-            >
-              {/* ── Error banner ───────────────────── */}
-              {errorMsg ? (
-                <View className="mx-4 mt-4 flex-row items-center bg-error-light border border-red-200 rounded-xl px-4 py-3">
-                  <Feather name="alert-circle" size={16} color="#DC2626" />
-                  <Text className="text-sm font-semibold text-error ml-2 flex-1">{errorMsg}</Text>
-                </View>
-              ) : null}
+        <AddItemPageHeader
+          onBack={handleCancel}
+          onCamera={() => setIsImageModalVisible(true)}
+          onRemoveImage={() => updateField("imageUri")("")}
+          imageUri={form.imageUri}
+        />
 
-              {/* ── Item Name + Select Unit ─────────── */}
-              <AddItemNameField
-                value={form.name}
-                onChangeText={updateField('name')}
-                unit={form.unit}
-                secondaryUnit={form.secondaryUnit}
-                conversionRate={form.conversionRate}
-                onSelectUnit={openUnitModal}
-                autoFocus
-              />
+        {/* ── Keyboard Avoiding View ────────────────── */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "padding"}
+          className="flex-1"
+          keyboardVerticalOffset={0}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View className="flex-1">
+              {/* ── Product / Services Toggle ─────────────── */}
+              <AddItemTypeToggle value={form.itemType} onChange={setItemType} />
+              <ScrollView
+                className="flex-1"
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
+              >
+                {/* ── Error banner ───────────────────── */}
+                {errorMsg ? (
+                  <View className="mx-4 mt-4 flex-row items-center bg-error-light border border-red-200 rounded-xl px-4 py-3">
+                    <Feather name="alert-circle" size={16} color="#DC2626" />
+                    <Text className="text-sm font-semibold text-error ml-2 flex-1">
+                      {errorMsg}
+                    </Text>
+                  </View>
+                ) : null}
 
-              {/* ── Progressive Disclosure ──────────── */}
-              {isNameEntered && (
-                <>
-                  <AddItemCodeCategory
-                    sku={form.sku}
-                    onChangeSku={updateField('sku')}
-                    onAssignCode={() => {
-                      const code = Array.from({ length: 11 }, () =>
-                        Math.floor(Math.random() * 10)
-                      ).join('');
-                      updateField('sku')(code);
-                    }}
-                    category={form.categoryName}
-                    onSelectCategory={openCategoryModal}
-                  />
+                {/* ── Item Name + Select Unit ─────────── */}
+                <AddItemNameField
+                  value={form.name}
+                  onChangeText={updateField("name")}
+                  unit={form.unit}
+                  secondaryUnit={form.secondaryUnit}
+                  conversionRate={form.conversionRate}
+                  onSelectUnit={openUnitModal}
+                  autoFocus
+                />
 
-                  {form.itemType === 'product' && (
-                    <AddItemTabs activeTab={activeTab} onChangeTab={setActiveTab} />
-                  )}
-
-                  {(activeTab === 'pricing' || form.itemType === 'service') ? (
-                    <AddItemPricingTab
-                      sellingPrice={form.sellingPrice}
-                      onSellingPriceChange={updateField('sellingPrice')}
-                      purchasePrice={form.purchasePrice}
-                      onPurchasePriceChange={updateField('purchasePrice')}
-                      isService={form.itemType === 'service'}
+                {/* ── Progressive Disclosure ──────────── */}
+                {isNameEntered && (
+                  <>
+                    <AddItemCodeCategory
+                      sku={form.sku}
+                      onChangeSku={updateField("sku")}
+                      onAssignCode={() => {
+                        const code = Array.from({ length: 11 }, () =>
+                          Math.floor(Math.random() * 10),
+                        ).join("");
+                        updateField("sku")(code);
+                      }}
+                      category={form.categoryName}
+                      onSelectCategory={openCategoryModal}
                     />
-                  ) : (
-                    form.itemType === 'product' && (
-                      <AddItemStockTab
-                        stockQuantity={form.stockQuantity}
-                        onStockQuantityChange={updateField('stockQuantity')}
-                        asOfDate={form.asOfDate}
-                        onAsOfDateChange={updateField('asOfDate')}
-                        onAsOfDatePress={() => setIsDatePickerVisible(true)}
-                        atPrice={form.atPrice}
-                        onAtPriceChange={updateField('atPrice')}
-                        lowStockAlert={form.lowStockAlert}
-                        onLowStockAlertChange={updateField('lowStockAlert')}
-                        itemLocation={form.itemLocation}
-                        onItemLocationChange={updateField('itemLocation')}
+
+                    {form.itemType === "product" && (
+                      <AddItemTabs
+                        activeTab={activeTab}
+                        onChangeTab={setActiveTab}
                       />
-                    )
-                  )}
-                </>
-              )}
-            </ScrollView>
+                    )}
 
-            {/* ── Fixed Bottom Footer ───────────────── */}
-            <AddItemPageFooter
-              onCancel={handleCancel}
-              onSave={handleSave}
-              loading={saving}
-              disabled={!isValid}
-            />
-          </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+                    {activeTab === "pricing" || form.itemType === "service" ? (
+                      <AddItemPricingTab
+                        sellingPrice={form.sellingPrice}
+                        onSellingPriceChange={updateField("sellingPrice")}
+                        purchasePrice={form.purchasePrice}
+                        onPurchasePriceChange={updateField("purchasePrice")}
+                        isService={form.itemType === "service"}
+                      />
+                    ) : (
+                      form.itemType === "product" && (
+                        <AddItemStockTab
+                          stockQuantity={form.stockQuantity}
+                          onStockQuantityChange={updateField("stockQuantity")}
+                          asOfDate={form.asOfDate}
+                          onAsOfDateChange={updateField("asOfDate")}
+                          onAsOfDatePress={() => setIsDatePickerVisible(true)}
+                          atPrice={form.atPrice}
+                          onAtPriceChange={updateField("atPrice")}
+                          lowStockAlert={form.lowStockAlert}
+                          onLowStockAlertChange={updateField("lowStockAlert")}
+                          itemLocation={form.itemLocation}
+                          onItemLocationChange={updateField("itemLocation")}
+                        />
+                      )
+                    )}
+                  </>
+                )}
+              </ScrollView>
 
-      {/* ── Unit Picker Modal ─────────────────────── */}
-      <AddItemUnitModal
-        visible={isUnitModalVisible}
-        selectedUnit={form.unit}
-        selectedSecondaryUnit={form.secondaryUnit}
-        selectedConversionRate={form.conversionRate}
-        units={unitOptions}
-        onSelect={handleSelectUnit}
-        onClose={closeUnitModal}
-      />
+              {/* ── Fixed Bottom Footer ───────────────── */}
+              <AddItemPageFooter
+                onCancel={handleCancel}
+                onSave={handleSave}
+                loading={saving}
+                disabled={!isValid}
+              />
+            </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
 
-      {/* ── Item Category Modal ───────────────────── */}
-      <ItemCategoryModal
-        visible={isCategoryModalVisible}
-        onClose={closeCategoryModal}
-        categories={categories}
-        selectedCategory={form.categoryId}
-        onSelectCategory={(cat) => {
-          updateField('categoryId')(cat.id);
-          updateField('categoryName')(cat.name);
-          closeCategoryModal();
-        }}
-        searchQuery={categorySearch}
-        onSearchChange={setCategorySearch}
-        loading={categoriesLoading}
-        onOpenCreate={openCreateModal}
-      />
+        {/* ── Unit Picker Modal ─────────────────────── */}
+        <AddItemUnitModal
+          visible={isUnitModalVisible}
+          selectedUnit={form.unit}
+          selectedSecondaryUnit={form.secondaryUnit}
+          selectedConversionRate={form.conversionRate}
+          units={unitOptions}
+          onSelect={handleSelectUnit}
+          onClose={closeUnitModal}
+        />
 
-      {/* ── Create Item Category Modal ────────────── */}
-      <CreateItemCategoryModal
-        visible={isCreateVisible}
-        onClose={closeCreateModal}
-        loading={categoryAdding}
-        onSave={async (name) => {
-          const created = await addCategory(name);
-          if (created) {
-            updateField('categoryId')(created.id);
-            updateField('categoryName')(created.name);
-            closeCreateModal();
+        {/* ── Item Category Modal ───────────────────── */}
+        <ItemCategoryModal
+          visible={isCategoryModalVisible}
+          onClose={closeCategoryModal}
+          categories={categories}
+          selectedCategory={form.categoryId}
+          onSelectCategory={(cat) => {
+            updateField("categoryId")(cat.id);
+            updateField("categoryName")(cat.name);
             closeCategoryModal();
-          }
-        }}
-      />
+          }}
+          searchQuery={categorySearch}
+          onSearchChange={setCategorySearch}
+          loading={categoriesLoading}
+          onOpenCreate={openCreateModal}
+        />
 
-      {/* ── Date Picker Modal ─────────────────────── */}
-      <DatePickerModal
-        visible={isDatePickerVisible}
-        onClose={() => setIsDatePickerVisible(false)}
-        onSelectDate={updateField('asOfDate')}
-      />
+        {/* ── Create Item Category Modal ────────────── */}
+        <CreateItemCategoryModal
+          visible={isCreateVisible}
+          onClose={closeCreateModal}
+          loading={categoryAdding}
+          onSave={async (name) => {
+            const created = await addCategory(name);
+            if (created) {
+              updateField("categoryId")(created.id);
+              updateField("categoryName")(created.name);
+              closeCreateModal();
+              closeCategoryModal();
+            }
+          }}
+        />
+
+        {/* ── Date Picker Modal ─────────────────────── */}
+        <DatePickerModal
+          visible={isDatePickerVisible}
+          onClose={() => setIsDatePickerVisible(false)}
+          onSelectDate={updateField("asOfDate")}
+        />
+
+        {/* ── Image Picker Modal ────────────────────── */}
+        <ImagePickerModal
+          visible={isImageModalVisible}
+          onClose={() => setIsImageModalVisible(false)}
+          onSelectGallery={handleSelectGallery}
+          onSelectCamera={handleSelectCamera}
+        />
       </View>
     </View>
   );

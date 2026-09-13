@@ -16,7 +16,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { HeaderLogo } from "../../components/onboarding/HeaderLogo";
 import { BackgroundPattern } from "../../components/onboarding/BackgroundPattern";
-import { auth, GoogleAuthProvider, signInWithCredential, signOut } from "../../lib/firebase";
+import {
+  auth,
+  GoogleAuthProvider,
+  signInWithCredential,
+  signOut,
+} from "../../lib/firebase";
 import { supabase } from "../../lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -43,7 +48,9 @@ export default function AuthScreen() {
     if (GoogleSigninInstance) {
       try {
         GoogleSigninInstance.configure({
-          webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || "520706100053-k05v9a5h4jnj6ali1urisj1k0oqbfm71.apps.googleusercontent.com",
+          webClientId:
+            process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
+            "520706100053-k05v9a5h4jnj6ali1urisj1k0oqbfm71.apps.googleusercontent.com",
           offlineAccess: true,
         });
       } catch (e) {
@@ -90,7 +97,7 @@ export default function AuthScreen() {
         .eq("owner_id", userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 is no rows returned
+      if (error && error.code !== "PGRST116") throw error; // PGRST116 is no rows returned
 
       if (data && data.id) {
         router.replace("/(tabs)/home");
@@ -103,14 +110,15 @@ export default function AuthScreen() {
     }
   };
 
-
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
       const GoogleSigninInstance = getGoogleSignin();
       if (GoogleSigninInstance) {
         // Check if Play Services are available
-        await GoogleSigninInstance.hasPlayServices({ showPlayServicesUpdateDialog: true });
+        await GoogleSigninInstance.hasPlayServices({
+          showPlayServicesUpdateDialog: true,
+        });
         const signInResult = await GoogleSigninInstance.signIn();
         const idToken = signInResult.data?.idToken;
 
@@ -119,25 +127,27 @@ export default function AuthScreen() {
           const userCredential = await signInWithCredential(auth, credential);
           if (userCredential.user) {
             const firebaseUser = userCredential.user;
-            
+
             // Sync user to Supabase
-            const { error: syncError } = await supabase
-              .from("users")
-              .upsert({
-                id: firebaseUser.uid,
-                email: firebaseUser.email,
-                display_name: firebaseUser.displayName,
-                photo_url: firebaseUser.photoURL,
-                updated_at: new Date().toISOString(),
-              });
+            const { error: syncError } = await supabase.from("users").upsert({
+              id: firebaseUser.uid,
+              email: firebaseUser.email,
+              display_name: firebaseUser.displayName,
+              photo_url: firebaseUser.photoURL,
+              updated_at: new Date().toISOString(),
+            });
 
             if (syncError) {
-              console.warn("Failed to sync user profile to Supabase:", syncError);
-              
-              const errorText = syncError?.message || "Server rate limit exceeded.";
+              console.warn(
+                "Failed to sync user profile to Supabase:",
+                syncError,
+              );
+
+              const errorText =
+                syncError?.message || "Server rate limit exceeded.";
               Alert.alert(
                 "Connection Sync Issue",
-                `We couldn't sync your account profile: ${errorText}`
+                `We couldn't sync your account profile: ${errorText}`,
               );
 
               try {
@@ -147,7 +157,7 @@ export default function AuthScreen() {
               }
               return;
             }
-            
+
             const user = auth.currentUser;
             if (user) {
               await checkBusinessAndNavigate(user.uid);
@@ -157,10 +167,7 @@ export default function AuthScreen() {
       }
     } catch (err: any) {
       console.log("Google Sign-In error details:", err?.message || err);
-      Alert.alert(
-        "Google Sign-In Failed",
-        err?.message || String(err)
-      );
+      Alert.alert("Google Sign-In Failed", err?.message || String(err));
     } finally {
       setLoading(false);
     }
@@ -227,7 +234,8 @@ export default function AuthScreen() {
           </TouchableOpacity>
 
           <Text className="text-sm sm:text-base text-slate-400 text-center mt-5 sm:mt-7 leading-relaxed max-w-sm">
-            By continuing, you agree to Byapro Terms of Service & Privacy Policy.
+            By continuing, you agree to Byapro Terms of Service & Privacy
+            Policy.
           </Text>
         </Animated.View>
 

@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TextInput } from 'react-native';
-import { ADD_ITEM_CONSTANTS } from '../../constants/items';
+import React from "react";
+import { View, Text, TextInput } from "react-native";
+import { ADD_ITEM_CONSTANTS } from "../../constants/items";
 
 interface PriceFieldProps {
   label: string;
@@ -8,7 +8,7 @@ interface PriceFieldProps {
   onChangeText: (v: string) => void;
   placeholder?: string;
   required?: boolean;
-  returnKeyType?: 'next' | 'done';
+  returnKeyType?: "next" | "done";
   onSubmitEditing?: () => void;
   inputRef?: React.RefObject<TextInput | null>;
   autoFocus?: boolean;
@@ -18,9 +18,9 @@ const PriceField: React.FC<PriceFieldProps> = ({
   label,
   value,
   onChangeText,
-  placeholder = '0',
+  placeholder = "0",
   required = false,
-  returnKeyType = 'next',
+  returnKeyType = "next",
   onSubmitEditing,
   inputRef,
   autoFocus = false,
