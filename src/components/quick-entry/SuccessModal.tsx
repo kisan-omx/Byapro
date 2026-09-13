@@ -1,13 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   View,
   Text,
   Modal,
   TouchableOpacity,
   TouchableWithoutFeedback,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { SuccessInfo } from '../../hooks/useQuickEntry';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { SuccessInfo } from "../../hooks/useQuickEntry";
 
 interface SuccessModalProps {
   visible: boolean;
@@ -84,4 +84,3 @@ export default function SuccessModal({
     </Modal>
   );
 }
-

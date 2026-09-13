@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React from "react";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export interface ReusableTransactionFooterProps {
   onSave: () => void;
@@ -16,14 +16,14 @@ export default function ReusableTransactionFooter({
   disabled = false,
 }: ReusableTransactionFooterProps) {
   return (
-    <SafeAreaView edges={['bottom']} className="bg-surface">
+    <SafeAreaView edges={["bottom"]} className="bg-surface">
       <View className="flex-row items-center justify-between bg-surface">
         {/* Save & New Button (50% Width, White BG, No Border) */}
         <TouchableOpacity
           onPress={onSaveAndNew}
           disabled={loading || disabled}
           className={`flex-1 py-4 items-center justify-center bg-surface ${
-            loading || disabled ? 'opacity-50' : 'active:bg-slate-100'
+            loading || disabled ? "opacity-50" : "active:bg-slate-100"
           }`}
           activeOpacity={0.7}
         >
@@ -35,7 +35,7 @@ export default function ReusableTransactionFooter({
           onPress={onSave}
           disabled={loading || disabled}
           className={`flex-1 py-4 bg-primary items-center justify-center ${
-            loading || disabled ? 'opacity-70' : 'active:bg-primary/90'
+            loading || disabled ? "opacity-70" : "active:bg-primary/90"
           }`}
           activeOpacity={0.8}
         >

@@ -1,7 +1,7 @@
-import React from 'react';
-import { StockFilterType, TypeFilterType } from '../../types/item';
-import { STOCK_FILTER_OPTIONS } from '../../constants/items';
-import FilterBar, { FilterChip } from '../common/FilterBar';
+import React from "react";
+import { StockFilterType, TypeFilterType } from "../../types/item";
+import { STOCK_FILTER_OPTIONS } from "../../constants/items";
+import FilterBar, { FilterChip } from "../common/FilterBar";
 
 export interface ItemFilterBarProps {
   stockFilter: StockFilterType;
@@ -24,32 +24,33 @@ export const ItemFilterBar: React.FC<ItemFilterBarProps> = ({
   onOpenTypeModal,
 }) => {
   const stockLabel =
-    stockFilter !== 'all'
-      ? (STOCK_FILTER_OPTIONS.find((o) => o.id === stockFilter)?.label ?? 'Stock')
-      : 'Stock';
-  const typeLabel = typeFilter !== 'all' ? typeFilter : 'Type';
+    stockFilter !== "all"
+      ? (STOCK_FILTER_OPTIONS.find((o) => o.id === stockFilter)?.label ??
+        "Stock")
+      : "Stock";
+  const typeLabel = typeFilter !== "all" ? typeFilter : "Type";
 
   const chips: FilterChip[] = [
     {
-      id: 'category',
-      label: 'Category',
+      id: "category",
+      label: "Category",
       isSelected: false, // no DB category column yet
       onPress: onOpenCategoryModal,
-      iconRight: 'chevron-down',
+      iconRight: "chevron-down",
     },
     {
-      id: 'stock',
+      id: "stock",
       label: stockLabel,
-      isSelected: stockFilter !== 'all',
+      isSelected: stockFilter !== "all",
       onPress: onOpenStockModal,
-      iconRight: 'chevron-down',
+      iconRight: "chevron-down",
     },
     {
-      id: 'type',
+      id: "type",
       label: typeLabel,
-      isSelected: typeFilter !== 'all',
+      isSelected: typeFilter !== "all",
       onPress: onOpenTypeModal,
-      iconRight: 'chevron-down',
+      iconRight: "chevron-down",
     },
   ];
 

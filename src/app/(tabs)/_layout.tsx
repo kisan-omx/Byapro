@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  
+
   // Calculate padding that accounts for system navigation bars on BOTH iOS and Android
   // This prevents the Android bottom navigation buttons from overlapping the app's tab bar.
   const bottomPadding = Math.max(insets.bottom + 8, 12);
@@ -51,7 +51,11 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "home" : "home-outline"} size={size} color={color} />
+            <Ionicons
+              name={focused ? "home" : "home-outline"}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -60,7 +64,11 @@ export default function TabLayout() {
         options={{
           title: "Transactions",
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "receipt" : "receipt-outline"} size={size} color={color} />
+            <Ionicons
+              name={focused ? "receipt" : "receipt-outline"}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -69,7 +77,11 @@ export default function TabLayout() {
         options={{
           title: "Parties",
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "people" : "people-outline"} size={size} color={color} />
+            <Ionicons
+              name={focused ? "people" : "people-outline"}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -78,7 +90,11 @@ export default function TabLayout() {
         options={{
           title: "Items",
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "cube" : "cube-outline"} size={size} color={color} />
+            <Ionicons
+              name={focused ? "cube" : "cube-outline"}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -87,7 +103,11 @@ export default function TabLayout() {
         options={{
           title: "More",
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "grid" : "grid-outline"} size={size} color={color} />
+            <Ionicons
+              name={focused ? "grid" : "grid-outline"}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />

@@ -18,7 +18,9 @@ export default function Index() {
 
     async function determineRoute() {
       try {
-        const onboardingValue = await AsyncStorage.getItem("onboarding_completed");
+        const onboardingValue = await AsyncStorage.getItem(
+          "onboarding_completed",
+        );
         if (onboardingValue !== "true") {
           setInitialRoute("/onboarding");
           return;
@@ -98,7 +100,7 @@ export default function Index() {
       // Use requestAnimationFrame to ensure the routing happens on the next frame
       requestAnimationFrame(() => {
         router.replace(initialRoute as any);
-        
+
         // Wait for the new route to fully mount before hiding splash
         // 300ms is a safe buffer to prevent any empty frames
         setTimeout(() => {
@@ -110,7 +112,16 @@ export default function Index() {
 
   // Always return the fallback UI while determining route AND during the transition
   return (
-    <View style={[StyleSheet.absoluteFill, { backgroundColor: "#208AEF", justifyContent: "center", alignItems: "center" }]}>
+    <View
+      style={[
+        StyleSheet.absoluteFill,
+        {
+          backgroundColor: "#208AEF",
+          justifyContent: "center",
+          alignItems: "center",
+        },
+      ]}
+    >
       <ActivityIndicator size="large" color="#FFFFFF" />
     </View>
   );

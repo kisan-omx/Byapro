@@ -1,6 +1,10 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { MaterialCommunityIcons, FontAwesome5, Ionicons } from "@expo/vector-icons";
+import {
+  MaterialCommunityIcons,
+  FontAwesome5,
+  Ionicons,
+} from "@expo/vector-icons";
 
 export function ItemsGraphic() {
   const items = [
@@ -8,7 +12,13 @@ export function ItemsGraphic() {
       id: "1",
       title: "2 Sets Of Book",
       subtitle: "2 Nos",
-      icon: <MaterialCommunityIcons name="book-multiple" size={26} color="#2563EB" />,
+      icon: (
+        <MaterialCommunityIcons
+          name="book-multiple"
+          size={26}
+          color="#2563EB"
+        />
+      ),
       bgColor: "bg-primary-light/60",
       action: "add",
     },
@@ -24,7 +34,9 @@ export function ItemsGraphic() {
       id: "3",
       title: "Brown Bread",
       subtitle: "450gms, 20 packs",
-      icon: <MaterialCommunityIcons name="bread-slice" size={24} color="#D97706" />,
+      icon: (
+        <MaterialCommunityIcons name="bread-slice" size={24} color="#D97706" />
+      ),
       bgColor: "bg-amber-100",
       action: "add",
     },
@@ -43,7 +55,9 @@ export function ItemsGraphic() {
           >
             <View className="flex-row items-center flex-1 pr-3">
               {/* Product Icon Container */}
-              <View className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl ${item.bgColor} items-center justify-center mr-3.5 border border-border/30 shadow-sm`}>
+              <View
+                className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl ${item.bgColor} items-center justify-center mr-3.5 border border-border/30 shadow-sm`}
+              >
                 {item.icon}
               </View>
 

@@ -30,13 +30,16 @@ REVOKE EXECUTE ON FUNCTION public.record_expense_transaction(UUID, UUID, NUMERIC
 -- ---------------------------------------------------------------
 -- 3. GRANT EXECUTE ONLY TO AUTHENTICATED AND SERVICE_ROLE
 -- ---------------------------------------------------------------
-GRANT EXECUTE ON FUNCTION public.record_sale_transaction(UUID, UUID, TEXT, NUMERIC, NUMERIC, TEXT, TEXT, JSONB) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.record_purchase_transaction(UUID, UUID, TEXT, NUMERIC, NUMERIC, TEXT, TEXT, JSONB) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.record_sale_return_transaction(UUID, UUID, UUID, TEXT, NUMERIC, NUMERIC, TEXT, TEXT, JSONB) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.record_purchase_return_transaction(UUID, UUID, UUID, TEXT, NUMERIC, NUMERIC, TEXT, TEXT, JSONB) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.record_payment_in_transaction(UUID, UUID, NUMERIC, TEXT, TEXT) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.record_payment_out_transaction(UUID, UUID, NUMERIC, TEXT, TEXT) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.record_expense_transaction(UUID, UUID, NUMERIC, TEXT, TEXT) TO authenticated, service_role;
+-- NOTE: Firebase Auth JWTs always arrive with role = 'anon' in Supabase.
+-- Therefore anon must also have EXECUTE, alongside authenticated and service_role.
+-- Security is enforced inside the function body via auth.jwt() IS NOT NULL checks.
+GRANT EXECUTE ON FUNCTION public.record_sale_transaction(UUID, UUID, TEXT, NUMERIC, NUMERIC, TEXT, TEXT, JSONB) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.record_purchase_transaction(UUID, UUID, TEXT, NUMERIC, NUMERIC, TEXT, TEXT, JSONB) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.record_sale_return_transaction(UUID, UUID, UUID, TEXT, NUMERIC, NUMERIC, TEXT, TEXT, JSONB) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.record_purchase_return_transaction(UUID, UUID, UUID, TEXT, NUMERIC, NUMERIC, TEXT, TEXT, JSONB) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.record_payment_in_transaction(UUID, UUID, NUMERIC, TEXT, TEXT) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.record_payment_out_transaction(UUID, UUID, NUMERIC, TEXT, TEXT) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.record_expense_transaction(UUID, UUID, NUMERIC, TEXT, TEXT) TO anon, authenticated, service_role;
 
 -- ---------------------------------------------------------------
 -- 4. ENFORCE SAFE SEARCH_PATH

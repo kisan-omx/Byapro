@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
-import { AddItemBaseField } from './AddItemBaseField';
-import { Feather } from '@expo/vector-icons';
+import React from "react";
+import { View, TouchableOpacity } from "react-native";
+import { AddItemBaseField } from "./AddItemBaseField";
+import { Feather } from "@expo/vector-icons";
 
 export interface AddItemStockTabProps {
   stockQuantity: string;
@@ -52,7 +52,9 @@ export const AddItemStockTab: React.FC<AddItemStockTabProps> = ({
                 value={asOfDate}
                 onChangeText={onAsOfDateChange}
                 editable={false}
-                rightAction={<Feather name="calendar" size={16} color="#94A3B8" />}
+                rightAction={
+                  <Feather name="calendar" size={16} color="#94A3B8" />
+                }
               />
             </View>
           </TouchableOpacity>

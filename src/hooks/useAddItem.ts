@@ -1,11 +1,12 @@
-import { useState, useCallback } from 'react';
-import { auth } from '../lib/firebase';
-import { getBusinessId } from '../services/quickEntryService';
-import { createItem } from '../services/itemService';
-import { itemEvents } from '../services/itemEvents';
-import { generateUUID } from '../utils/uuid';
-import { Item } from '../types/item';
-import { ADD_ITEM_CONSTANTS, ItemType, UNIT_OPTIONS } from '../constants/items';
+import { useState, useCallback } from "react";
+import { auth } from "../lib/firebase";
+import { getBusinessId } from "../services/quickEntryService";
+import { createItem } from "../services/itemService";
+import { itemEvents } from "../services/itemEvents";
+import { uploadItemImageAsync, checkImageSizeAsync } from "../services/storageService";
+import { generateUUID } from "../utils/uuid";
+import { Item } from "../types/item";
+import { ADD_ITEM_CONSTANTS, ItemType, UNIT_OPTIONS } from "../constants/items";
 
 // ─────────────────────────────────────────────────
 // Form state
@@ -26,28 +27,43 @@ export interface AddItemFormState {
   itemLocation: string;
   sku: string;
   itemType: ItemType;
+  imageUri: string | null;
 }
 
 const TODAY = new Date();
-const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const SHORT_MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 const DEFAULT_AS_OF_DATE = `${TODAY.getDate()}-${SHORT_MONTHS[TODAY.getMonth()]}-${TODAY.getFullYear()}`;
 
 const INITIAL_FORM: AddItemFormState = {
-  name: '',
-  sellingPrice: '',
-  purchasePrice: '',
-  unit: '',
-  secondaryUnit: '',
-  conversionRate: '',
-  categoryId: '',
-  categoryName: '',
-  stockQuantity: '',
+  name: "",
+  sellingPrice: "",
+  purchasePrice: "",
+  unit: "",
+  secondaryUnit: "",
+  conversionRate: "",
+  categoryId: "",
+  categoryName: "",
+  stockQuantity: "",
   asOfDate: DEFAULT_AS_OF_DATE,
-  atPrice: '',
-  lowStockAlert: '',
-  itemLocation: '',
-  sku: '',
-  itemType: 'product',
+  atPrice: "",
+  lowStockAlert: "",
+  itemLocation: "",
+  sku: "",
+  itemType: "product",
+  imageUri: null,
 };
 
 // ─────────────────────────────────────────────────
@@ -121,22 +137,28 @@ export function useAddItem() {
 
     const tempId = generateUUID();
     const qty = form.stockQuantity.trim() ? parseFloat(form.stockQuantity) : 0;
-    const lowAlert = form.lowStockAlert.trim() ? parseFloat(form.lowStockAlert) : null;
-    const convRate = form.conversionRate.trim() ? parseFloat(form.conversionRate) : null;
+    const lowAlert = form.lowStockAlert.trim()
+      ? parseFloat(form.lowStockAlert)
+      : null;
+    const convRate = form.conversionRate.trim()
+      ? parseFloat(form.conversionRate)
+      : null;
 
-    let stockStatus: Item['stockStatus'] = 'in_stock';
-    if (qty <= 0) stockStatus = 'out_of_stock';
-    else if (lowAlert != null && qty <= lowAlert) stockStatus = 'low_stock';
+    let stockStatus: Item["stockStatus"] = "in_stock";
+    if (qty <= 0) stockStatus = "out_of_stock";
+    else if (lowAlert != null && qty <= lowAlert) stockStatus = "low_stock";
 
     const sp = form.sellingPrice.trim() ? parseFloat(form.sellingPrice) : 0;
 
     const optimisticItem: Item = {
       id: tempId,
-      businessId: '',
+      businessId: "",
       name: form.name.trim(),
       sku: form.sku.trim() || null,
       sellingPrice: sp,
-      purchasePrice: form.purchasePrice.trim() ? parseFloat(form.purchasePrice) : null,
+      purchasePrice: form.purchasePrice.trim()
+        ? parseFloat(form.purchasePrice)
+        : null,
       stockQuantity: qty,
       asOfDate: form.asOfDate || null,
       atPrice: form.atPrice.trim() ? parseFloat(form.atPrice) : null,
@@ -147,10 +169,13 @@ export function useAddItem() {
       conversionRate: convRate,
       categoryId: form.categoryId || null,
       itemType: form.itemType,
+      imagePath: null,
+      imageUrl: form.imageUri || null, // local URI for instant optimistic preview
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       stockStatus,
-      avatarLetter: (form.name.trim()[0] ?? '?').toUpperCase(),
-      syncStatus: 'saving',
+      avatarLetter: (form.name.trim()[0] ?? "?").toUpperCase(),
+      syncStatus: "saving",
     };
 
     itemEvents.emitCreated(optimisticItem);
@@ -159,32 +184,53 @@ export function useAddItem() {
     (async () => {
       try {
         const user = auth.currentUser;
-        if (!user) throw new Error('Not authenticated');
+        if (!user) throw new Error("Not authenticated");
         const businessId = await getBusinessId(user.uid);
-        if (!businessId) throw new Error('No business found');
+        if (!businessId) throw new Error("No business found");
+
+        // Upload: validate → compress → upload as Blob → return storage path
+        let uploadedImagePath: string | undefined = undefined;
+        if (form.imageUri) {
+          try {
+            uploadedImagePath = await uploadItemImageAsync(
+              form.imageUri,
+              businessId,
+              tempId,
+            );
+          } catch (uploadErr) {
+            console.error("Image upload failed", uploadErr);
+          }
+        }
 
         const saved = await createItem({
           id: tempId,
           businessId,
           name: form.name.trim(),
           sellingPrice: sp,
-          purchasePrice: form.purchasePrice.trim() ? parseFloat(form.purchasePrice) : undefined,
+          purchasePrice: form.purchasePrice.trim()
+            ? parseFloat(form.purchasePrice)
+            : undefined,
           unit: form.unit.trim() || undefined,
           secondaryUnit: form.secondaryUnit.trim() || undefined,
           conversionRate: convRate ?? undefined,
           categoryId: form.categoryId || undefined,
-          stockQuantity: form.stockQuantity.trim() ? parseFloat(form.stockQuantity) : undefined,
+          stockQuantity: form.stockQuantity.trim()
+            ? parseFloat(form.stockQuantity)
+            : undefined,
           asOfDate: form.asOfDate || undefined,
           atPrice: form.atPrice.trim() ? parseFloat(form.atPrice) : undefined,
-          lowStockAlert: form.lowStockAlert.trim() ? parseFloat(form.lowStockAlert) : undefined,
+          lowStockAlert: form.lowStockAlert.trim()
+            ? parseFloat(form.lowStockAlert)
+            : undefined,
           itemLocation: form.itemLocation.trim() || undefined,
           sku: form.sku.trim() || undefined,
           itemType: form.itemType,
+          imagePath: uploadedImagePath,
         });
 
         itemEvents.emitSaved(tempId, saved);
       } catch (err: any) {
-        itemEvents.emitFailed(tempId, err?.message || 'Failed to save item');
+        itemEvents.emitFailed(tempId, err?.message || "Failed to save item");
       }
     })();
 

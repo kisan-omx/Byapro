@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback } from "react";
 import {
   View,
   ScrollView,
@@ -6,19 +6,19 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
-import { useAddParty } from '../hooks/useAddParty';
+import { useAddParty } from "../hooks/useAddParty";
 import {
   AddPartyHeader,
   ImportContactsBanner,
   AddPartyForm,
   AddPartyFooter,
   ContactsPickerModal,
-} from '../components/parties';
-import { DatePickerModal } from '../components/common';
+} from "../components/parties";
+import { DatePickerModal } from "../components/common";
 
 export default function AddPartyScreen() {
   const router = useRouter();
@@ -72,17 +72,17 @@ export default function AddPartyScreen() {
     (contactName: string, contactPhone?: string) => {
       selectContact(contactName, contactPhone);
     },
-    [selectContact]
+    [selectContact],
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-surface" edges={["top"]}>
       {/* ── Header (No settings icon, Back Arrow + Title) ─────────────── */}
       <AddPartyHeader onBack={() => router.back()} />
 
       {/* ── Keyboard Avoiding View (Buttons rest just on top of keyboard) ─ */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        behavior={Platform.OS === "ios" ? "padding" : "padding"}
         className="flex-1"
         keyboardVerticalOffset={0}
       >

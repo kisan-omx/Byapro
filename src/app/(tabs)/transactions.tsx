@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,26 +6,28 @@ import {
   ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
-import TransactionHeader from '../../components/transactions/TransactionHeader';
-import TransactionDateFilter from '../../components/transactions/TransactionDateFilter';
-import TransactionCard from '../../components/transactions/TransactionCard';
-import TransactionFloatingActions from '../../components/transactions/TransactionFloatingActions';
-import DateFilterModal from '../../components/transactions/DateFilterModal';
-import AddTransactionModal from '../../components/transactions/AddTransactionModal';
-import SelectDateModal from '../../components/common/SelectDateModal';
-import SelectTypeModal from '../../components/common/SelectTypeModal';
-import { useTransactions } from '../../hooks/useTransactions';
+import TransactionHeader from "../../components/transactions/TransactionHeader";
+import TransactionDateFilter from "../../components/transactions/TransactionDateFilter";
+import TransactionCard from "../../components/transactions/TransactionCard";
+import TransactionFloatingActions from "../../components/transactions/TransactionFloatingActions";
+import DateFilterModal from "../../components/transactions/DateFilterModal";
+import AddTransactionModal from "../../components/transactions/AddTransactionModal";
+import SelectDateModal from "../../components/common/SelectDateModal";
+import SelectTypeModal from "../../components/common/SelectTypeModal";
+import { useTransactions } from "../../hooks/useTransactions";
 
 export default function TransactionsScreen() {
   const router = useRouter();
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
-  const [isSelectDateModalVisible, setIsSelectDateModalVisible] = useState(false);
-  const [isSelectTypeModalVisible, setIsSelectTypeModalVisible] = useState(false);
+  const [isSelectDateModalVisible, setIsSelectDateModalVisible] =
+    useState(false);
+  const [isSelectTypeModalVisible, setIsSelectTypeModalVisible] =
+    useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
 
   const {
@@ -46,7 +48,7 @@ export default function TransactionsScreen() {
   } = useTransactions();
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
       {/* Top White Header with Border (Title, Settings Icon & Search Bar) */}
       <TransactionHeader
         onOpenSettings={() => setIsFilterModalVisible(true)}
@@ -82,7 +84,11 @@ export default function TransactionsScreen() {
           !loading ? (
             <View className="py-12 px-6 items-center justify-center">
               <View className="w-24 h-24 rounded-full bg-slate-100 border border-slate-200/80 items-center justify-center mb-4 shadow-xs">
-                <MaterialCommunityIcons name="file-search-outline" size={48} color="#94A3B8" />
+                <MaterialCommunityIcons
+                  name="file-search-outline"
+                  size={48}
+                  color="#94A3B8"
+                />
               </View>
               <Text className="text-lg font-bold text-text mb-1 text-center">
                 No Transaction Found
@@ -108,14 +114,16 @@ export default function TransactionsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={refresh}
-            colors={['#0EA5E9']}
+            colors={["#0EA5E9"]}
             tintColor="#0EA5E9"
           />
         }
       />
 
       {/* Floating Bottom Action Buttons */}
-      <TransactionFloatingActions onOpenAddModal={() => setIsAddModalVisible(true)} />
+      <TransactionFloatingActions
+        onOpenAddModal={() => setIsAddModalVisible(true)}
+      />
 
       {/* Add Transaction Option Modal */}
       <AddTransactionModal

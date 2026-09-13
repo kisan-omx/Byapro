@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,10 +9,10 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { ItemCategory } from '../../types/itemCategory';
-import { ITEM_CATEGORY_CONSTANTS } from '../../constants/itemCategory';
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { ItemCategory } from "../../types/itemCategory";
+import { ITEM_CATEGORY_CONSTANTS } from "../../constants/itemCategory";
 
 export interface ItemCategoryModalProps {
   visible: boolean;
@@ -55,10 +55,7 @@ export const ItemCategoryModal: React.FC<ItemCategoryModalProps> = ({
       animationType="slide"
       onRequestClose={handleClose}
     >
-      <KeyboardAvoidingView
-        behavior="padding"
-        className="flex-1"
-      >
+      <KeyboardAvoidingView behavior="padding" className="flex-1">
         <TouchableOpacity
           className="flex-1 bg-black/40 justify-end"
           activeOpacity={1}
@@ -96,7 +93,7 @@ export const ItemCategoryModal: React.FC<ItemCategoryModalProps> = ({
                 autoCorrect={false}
               />
               {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => onSearchChange('')}>
+                <TouchableOpacity onPress={() => onSearchChange("")}>
                   <Feather name="x-circle" size={16} color="#94A3B8" />
                 </TouchableOpacity>
               )}
@@ -134,7 +131,9 @@ export const ItemCategoryModal: React.FC<ItemCategoryModalProps> = ({
                       </Text>
                       <View
                         className={`w-5 h-5 rounded-full border-2 items-center justify-center ${
-                          isSelected ? 'border-primary bg-primary' : 'border-border'
+                          isSelected
+                            ? "border-primary bg-primary"
+                            : "border-border"
                         }`}
                       >
                         {isSelected && (

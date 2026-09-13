@@ -1,7 +1,7 @@
-import React from 'react';
-import { DateFilterType } from '../../types/transaction';
-import { DATE_FILTER_OPTIONS } from '../../constants/transactionConstants';
-import FilterBar from '../common/FilterBar';
+import React from "react";
+import { DateFilterType } from "../../types/transaction";
+import { DATE_FILTER_OPTIONS } from "../../constants/transactionConstants";
+import FilterBar from "../common/FilterBar";
 
 export interface TransactionDateFilterProps {
   dateFilter: DateFilterType;
@@ -13,7 +13,8 @@ export default function TransactionDateFilter({
   onOpenDateFilter,
 }: TransactionDateFilterProps) {
   const selectedDateLabel =
-    DATE_FILTER_OPTIONS.find((opt) => opt.id === dateFilter)?.label || 'All Time';
+    DATE_FILTER_OPTIONS.find((opt) => opt.id === dateFilter)?.label ||
+    "All Time";
 
   return (
     <FilterBar

@@ -1,14 +1,23 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { View, Alert, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import React, { useState, useCallback, useMemo } from "react";
+import {
+  View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
-import ReusableTransactionHeader from '../components/transactions/ReusableTransactionHeader';
-import ReusableTransactionFooter from '../components/transactions/ReusableTransactionFooter';
-import ReusableTransactionForm from '../components/transactions/ReusableTransactionForm';
-import PartySelectionModal, { Party } from '../components/quick-entry/PartySelectionModal';
-import SuccessModal from '../components/quick-entry/SuccessModal';
-import { EntryType } from '../components/quick-entry/QuickEntryTabs';
-import { useQuickEntry } from '../hooks/useQuickEntry';
+import ReusableTransactionHeader from "../components/transactions/ReusableTransactionHeader";
+import ReusableTransactionFooter from "../components/transactions/ReusableTransactionFooter";
+import ReusableTransactionForm from "../components/transactions/ReusableTransactionForm";
+import PartySelectionModal, {
+  Party,
+} from "../components/quick-entry/PartySelectionModal";
+import SuccessModal from "../components/quick-entry/SuccessModal";
+import { EntryType } from "../components/quick-entry/QuickEntryTabs";
+import { useQuickEntry } from "../hooks/useQuickEntry";
 
 export default function TransactionFormScreen() {
   const router = useRouter();
@@ -16,68 +25,108 @@ export default function TransactionFormScreen() {
 
   // Map route params cleanly to EntryType
   const entryType: EntryType = useMemo(() => {
-    const rawType = (params.type || 'Sale').toLowerCase().replace('-', ' ');
-    if (rawType.includes('sale return') || rawType === 'sale_return') return 'Sale Return';
-    if (rawType.includes('purchase return') || rawType === 'purchase_return') return 'Purchase Return';
-    if (rawType.includes('payment in') || rawType === 'payment_in') return 'Payment In';
-    if (rawType.includes('payment out') || rawType === 'payment_out') return 'Payment Out';
-    if (rawType.includes('purchase')) return 'Purchase';
-    if (rawType.includes('expense')) return 'Expense';
-    return 'Sale';
+    const rawType = (params.type || "Sale").toLowerCase().replace("-", " ");
+    if (rawType.includes("sale return") || rawType === "sale_return")
+      return "Sale Return";
+    if (rawType.includes("purchase return") || rawType === "purchase_return")
+      return "Purchase Return";
+    if (rawType.includes("payment in") || rawType === "payment_in")
+      return "Payment In";
+    if (rawType.includes("payment out") || rawType === "payment_out")
+      return "Payment Out";
+    if (rawType.includes("purchase")) return "Purchase";
+    if (rawType.includes("expense")) return "Expense";
+    return "Sale";
   }, [params.type]);
 
-  const [paymentType, setPaymentType] = useState<'credit' | 'cash'>('cash');
+  const [paymentType, setPaymentType] = useState<"credit" | "cash">("cash");
   const [invoiceCounter, setInvoiceCounter] = useState(1);
-  const [invoiceNoText, setInvoiceNoText] = useState<string>('1');
+  const [invoiceNoText, setInvoiceNoText] = useState<string>("1");
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
-  const [partyNameText, setPartyNameText] = useState<string>('');
-  const [amount, setAmount] = useState<string>('');
-  const [note, setNote] = useState<string>('');
+  const [partyNameText, setPartyNameText] = useState<string>("");
+  const [amount, setAmount] = useState<string>("");
+  const [note, setNote] = useState<string>("");
   const [isPartyModalVisible, setIsPartyModalVisible] = useState(false);
   const [isSaveAndNewMode, setIsSaveAndNewMode] = useState(false);
 
   // Formatted date string (e.g. 20-Bhadra-2083 or current date)
   const dateStr = useMemo(() => {
     const today = new Date();
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     return `${today.getDate()}-${months[today.getMonth()]}-${today.getFullYear()}`;
   }, []);
 
-  const { saving, successInfo, validationError, handleRecord, dismissSuccess, clearValidationError } =
-    useQuickEntry();
+  const {
+    saving,
+    successInfo,
+    validationError,
+    handleRecord,
+    dismissSuccess,
+    clearValidationError,
+  } = useQuickEntry();
 
-  const showPaymentToggle = entryType === 'Sale' || entryType === 'Purchase' || entryType === 'Sale Return' || entryType === 'Purchase Return';
-  const showAddItems = entryType === 'Sale' || entryType === 'Purchase' || entryType === 'Sale Return' || entryType === 'Purchase Return';
+  const showPaymentToggle =
+    entryType === "Sale" ||
+    entryType === "Purchase" ||
+    entryType === "Sale Return" ||
+    entryType === "Purchase Return";
+  const showAddItems =
+    entryType === "Sale" ||
+    entryType === "Purchase" ||
+    entryType === "Sale Return" ||
+    entryType === "Purchase Return";
 
   // ── Handlers ─────────────────────────────────────────────────────────────
-  const handlePartySelect = useCallback((party: Party | null) => {
-    setSelectedParty(party);
-    setPartyNameText(party ? party.name : '');
-    clearValidationError();
-  }, [clearValidationError]);
+  const handlePartySelect = useCallback(
+    (party: Party | null) => {
+      setSelectedParty(party);
+      setPartyNameText(party ? party.name : "");
+      clearValidationError();
+    },
+    [clearValidationError],
+  );
 
-  const handlePartyNameChange = useCallback((text: string) => {
-    clearValidationError();
-    setPartyNameText(text);
-    if (text.trim()) {
-      setSelectedParty({
-        id: selectedParty?.id || `custom-${Date.now()}`,
-        name: text.trim(),
-        subtitle: selectedParty?.subtitle,
-        balance: selectedParty?.balance || 0,
-        type: 'Party',
-      });
-    } else {
-      setSelectedParty(null);
-    }
-  }, [clearValidationError, selectedParty]);
+  const handlePartyNameChange = useCallback(
+    (text: string) => {
+      clearValidationError();
+      setPartyNameText(text);
+      if (text.trim()) {
+        setSelectedParty({
+          id: selectedParty?.id || `custom-${Date.now()}`,
+          name: text.trim(),
+          subtitle: selectedParty?.subtitle,
+          balance: selectedParty?.balance || 0,
+          type: "Party",
+        });
+      } else {
+        setSelectedParty(null);
+      }
+    },
+    [clearValidationError, selectedParty],
+  );
 
   const handleAddItems = useCallback(() => {
-    Alert.alert('Add Items', 'Item selection modal can be integrated here.');
+    Alert.alert("Add Items", "Item selection modal can be integrated here.");
   }, []);
 
   const handleBarcodeScan = useCallback(() => {
-    Alert.alert('Barcode Scanner', 'Barcode scanner camera view can be opened here.');
+    Alert.alert(
+      "Barcode Scanner",
+      "Barcode scanner camera view can be opened here.",
+    );
   }, []);
 
   const executeRecord = useCallback(
@@ -102,10 +151,10 @@ export default function TransactionFormScreen() {
     dismissSuccess();
     if (isSaveAndNewMode) {
       // Reset form for next entry
-      setAmount('');
+      setAmount("");
       setSelectedParty(null);
-      setPartyNameText('');
-      setNote('');
+      setPartyNameText("");
+      setNote("");
       const nextNum = invoiceCounter + 1;
       setInvoiceCounter(nextNum);
       setInvoiceNoText(nextNum.toString());
@@ -116,11 +165,11 @@ export default function TransactionFormScreen() {
   }, [dismissSuccess, isSaveAndNewMode, invoiceCounter, router]);
 
   const partyError =
-    validationError?.field === 'party' || validationError?.field === 'category'
+    validationError?.field === "party" || validationError?.field === "category"
       ? validationError.message
       : null;
   const amountError =
-    validationError?.field === 'amount' ? validationError.message : null;
+    validationError?.field === "amount" ? validationError.message : null;
 
   return (
     <View className="flex-1 bg-surface">
@@ -138,7 +187,7 @@ export default function TransactionFormScreen() {
 
       {/* ── Keyboard Avoiding View (Buttons rest just on top of keyboard) ─ */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        behavior={Platform.OS === "ios" ? "padding" : "padding"}
         keyboardVerticalOffset={0}
         className="flex-1"
       >
@@ -195,7 +244,7 @@ export default function TransactionFormScreen() {
         onClose={handleSuccessClose}
         onViewTransactions={() => {
           dismissSuccess();
-          router.navigate('/(tabs)/transactions');
+          router.navigate("/(tabs)/transactions");
         }}
       />
     </View>

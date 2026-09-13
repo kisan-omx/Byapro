@@ -8,7 +8,12 @@ export function HeaderLogo() {
       {/* Brand Logo & Name */}
       <View className="flex-row items-center justify-center gap-x-2 sm:gap-x-3">
         <View className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-tr from-error to-warning items-center justify-center shadow-md shadow-error/20 bg-error">
-          <Ionicons name="play" size={18} color="#FFFFFF" style={{ transform: [{ rotate: "-90deg" }] }} />
+          <Ionicons
+            name="play"
+            size={18}
+            color="#FFFFFF"
+            style={{ transform: [{ rotate: "-90deg" }] }}
+          />
         </View>
         <View className="flex-row items-baseline">
           <Text className="text-2xl sm:text-3xl md:text-4xl font-black text-text tracking-tight">

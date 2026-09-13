@@ -1,26 +1,35 @@
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 
 export type EntryType =
-  | 'Sale'
-  | 'Purchase'
-  | 'Payment In'
-  | 'Payment Out'
-  | 'Expense'
-  | 'Sale Return'
-  | 'Purchase Return';
+  | "Sale"
+  | "Purchase"
+  | "Payment In"
+  | "Payment Out"
+  | "Expense"
+  | "Sale Return"
+  | "Purchase Return";
 
 interface QuickEntryTabsProps {
   selectedTab: EntryType;
   onSelectTab: (tab: EntryType) => void;
 }
 
-const TABS: EntryType[] = ['Sale', 'Purchase', 'Payment In', 'Payment Out', 'Expense'];
+const TABS: EntryType[] = [
+  "Sale",
+  "Purchase",
+  "Payment In",
+  "Payment Out",
+  "Expense",
+];
 
-export default function QuickEntryTabs({ selectedTab, onSelectTab }: QuickEntryTabsProps) {
+export default function QuickEntryTabs({
+  selectedTab,
+  onSelectTab,
+}: QuickEntryTabsProps) {
   return (
     <View className="bg-surface py-2">
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
       >
@@ -31,12 +40,12 @@ export default function QuickEntryTabs({ selectedTab, onSelectTab }: QuickEntryT
               key={tab}
               onPress={() => onSelectTab(tab)}
               className={`px-4 py-2 rounded-full ${
-                isActive ? 'bg-primary' : 'bg-background'
+                isActive ? "bg-primary" : "bg-background"
               }`}
             >
-              <Text 
+              <Text
                 className={`font-medium ${
-                  isActive ? 'text-white' : 'text-text-secondary'
+                  isActive ? "text-white" : "text-text-secondary"
                 }`}
               >
                 {tab}

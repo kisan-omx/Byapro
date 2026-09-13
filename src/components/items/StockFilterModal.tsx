@@ -1,14 +1,8 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { StockFilterType } from '../../types/item';
-import { STOCK_FILTER_OPTIONS } from '../../constants/items';
+import React from "react";
+import { View, Text, Modal, TouchableOpacity, ScrollView } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { StockFilterType } from "../../types/item";
+import { STOCK_FILTER_OPTIONS } from "../../constants/items";
 
 export interface StockFilterModalProps {
   visible: boolean;
@@ -57,7 +51,9 @@ export const StockFilterModal: React.FC<StockFilterModalProps> = ({
 
           {/* Title row */}
           <View className="flex-row items-center justify-between px-5 py-3 border-b border-border/60">
-            <Text className="text-base font-bold text-text">Filter by Stock</Text>
+            <Text className="text-base font-bold text-text">
+              Filter by Stock
+            </Text>
             <TouchableOpacity onPress={onClose} className="p-1">
               <Feather name="x" size={20} color="#475569" />
             </TouchableOpacity>
@@ -77,12 +73,12 @@ export const StockFilterModal: React.FC<StockFilterModalProps> = ({
                   onPress={() => handleSelect(option.id)}
                   activeOpacity={0.75}
                   className={`flex-row items-center justify-between px-5 py-4 border-b border-border/40 ${
-                    isSelected ? 'bg-primary-light' : ''
+                    isSelected ? "bg-primary-light" : ""
                   }`}
                 >
                   <Text
                     className={`text-sm font-semibold ${
-                      isSelected ? 'text-primary' : 'text-text'
+                      isSelected ? "text-primary" : "text-text"
                     }`}
                   >
                     {option.label}

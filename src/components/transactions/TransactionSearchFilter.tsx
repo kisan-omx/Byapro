@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { DateFilterType } from '../../types/transaction';
-import { DATE_FILTER_OPTIONS } from '../../constants/transactionConstants';
+import React from "react";
+import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { DateFilterType } from "../../types/transaction";
+import { DATE_FILTER_OPTIONS } from "../../constants/transactionConstants";
 
 interface TransactionSearchFilterProps {
   searchQuery: string;
@@ -20,7 +20,8 @@ export default function TransactionSearchFilter({
   onOpenTypeFilter,
 }: TransactionSearchFilterProps) {
   const selectedDateLabel =
-    DATE_FILTER_OPTIONS.find((opt) => opt.id === dateFilter)?.label || 'All Time';
+    DATE_FILTER_OPTIONS.find((opt) => opt.id === dateFilter)?.label ||
+    "All Time";
 
   return (
     <View className="px-4 mb-3">
@@ -37,13 +38,23 @@ export default function TransactionSearchFilter({
           autoCorrect={false}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => onSearchChange('')} className="p-1 mr-1">
+          <TouchableOpacity
+            onPress={() => onSearchChange("")}
+            className="p-1 mr-1"
+          >
             <Feather name="x-circle" size={16} color="#94A3B8" />
           </TouchableOpacity>
         )}
         <View className="w-px h-5 bg-border mx-2" />
-        <TouchableOpacity onPress={onOpenTypeFilter || onOpenDateFilter} className="p-1">
-          <MaterialCommunityIcons name="filter-variant" size={22} color="#475569" />
+        <TouchableOpacity
+          onPress={onOpenTypeFilter || onOpenDateFilter}
+          className="p-1"
+        >
+          <MaterialCommunityIcons
+            name="filter-variant"
+            size={22}
+            color="#475569"
+          />
         </TouchableOpacity>
       </View>
 
@@ -55,11 +66,15 @@ export default function TransactionSearchFilter({
           activeOpacity={0.7}
         >
           <Feather name="calendar" size={16} color="#64748B" />
-          <Text className="text-sm font-semibold text-text-secondary">{selectedDateLabel}</Text>
+          <Text className="text-sm font-semibold text-text-secondary">
+            {selectedDateLabel}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={onOpenDateFilter} activeOpacity={0.7}>
-          <Text className="text-xs font-bold text-primary tracking-wider uppercase">CHANGE</Text>
+          <Text className="text-xs font-bold text-primary tracking-wider uppercase">
+            CHANGE
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,8 +8,8 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { ITEM_CATEGORY_CONSTANTS } from '../../constants/itemCategory';
+} from "react-native";
+import { ITEM_CATEGORY_CONSTANTS } from "../../constants/itemCategory";
 
 export interface CreateItemCategoryModalProps {
   visible: boolean;
@@ -18,23 +18,20 @@ export interface CreateItemCategoryModalProps {
   loading: boolean;
 }
 
-export const CreateItemCategoryModal: React.FC<CreateItemCategoryModalProps> = ({
-  visible,
-  onClose,
-  onSave,
-  loading,
-}) => {
-  const [name, setName] = useState('');
+export const CreateItemCategoryModal: React.FC<
+  CreateItemCategoryModalProps
+> = ({ visible, onClose, onSave, loading }) => {
+  const [name, setName] = useState("");
   const [isFocused, setIsFocused] = useState(false);
 
   const handleSave = async () => {
     if (!name.trim() || loading) return;
     await onSave(name.trim());
-    setName('');
+    setName("");
   };
 
   const handleClose = () => {
-    setName('');
+    setName("");
     onClose();
   };
 
@@ -48,7 +45,7 @@ export const CreateItemCategoryModal: React.FC<CreateItemCategoryModalProps> = (
       onRequestClose={handleClose}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        behavior={Platform.OS === "ios" ? "padding" : "padding"}
         className="flex-1"
       >
         <TouchableOpacity
@@ -70,7 +67,7 @@ export const CreateItemCategoryModal: React.FC<CreateItemCategoryModalProps> = (
             <View className="mb-6 relative pt-2">
               <View
                 className={`border rounded-xl px-4 py-3 ${
-                  isFocused ? 'border-primary' : 'border-border'
+                  isFocused ? "border-primary" : "border-border"
                 }`}
               >
                 <TextInput
@@ -91,7 +88,7 @@ export const CreateItemCategoryModal: React.FC<CreateItemCategoryModalProps> = (
               <View className="absolute left-3 top-0 bg-surface px-1">
                 <Text
                   className={`text-xs font-medium ${
-                    isFocused ? 'text-primary' : 'text-text-secondary'
+                    isFocused ? "text-primary" : "text-text-secondary"
                   }`}
                 >
                   {ITEM_CATEGORY_CONSTANTS.CREATE_INPUT_LABEL}
@@ -104,7 +101,7 @@ export const CreateItemCategoryModal: React.FC<CreateItemCategoryModalProps> = (
               onPress={handleSave}
               disabled={!isValid || loading}
               className={`rounded-xl py-4 items-center ${
-                isValid ? 'bg-primary' : 'bg-slate-100'
+                isValid ? "bg-primary" : "bg-slate-100"
               }`}
             >
               {loading ? (
@@ -112,7 +109,7 @@ export const CreateItemCategoryModal: React.FC<CreateItemCategoryModalProps> = (
               ) : (
                 <Text
                   className={`text-base font-bold ${
-                    isValid ? 'text-white' : 'text-slate-400'
+                    isValid ? "text-white" : "text-slate-400"
                   }`}
                 >
                   {ITEM_CATEGORY_CONSTANTS.SAVE_BUTTON}

@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React from "react";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export interface CancelSaveFooterProps {
   onCancel: () => void;
@@ -14,13 +14,16 @@ export interface CancelSaveFooterProps {
 export const CancelSaveFooter: React.FC<CancelSaveFooterProps> = ({
   onCancel,
   onSave,
-  cancelLabel = 'Cancel',
-  saveLabel = 'Save',
+  cancelLabel = "Cancel",
+  saveLabel = "Save",
   loading = false,
   disabled = false,
 }) => {
   return (
-    <SafeAreaView edges={['bottom']} className="bg-surface pt-4 pb-4 px-4 border-t border-border/50 mt-auto">
+    <SafeAreaView
+      edges={["bottom"]}
+      className="bg-surface pt-4 pb-4 px-4 border-t border-border/50 mt-auto"
+    >
       <View className="flex-row items-center gap-4">
         <TouchableOpacity
           activeOpacity={0.7}
@@ -28,7 +31,9 @@ export const CancelSaveFooter: React.FC<CancelSaveFooterProps> = ({
           disabled={loading}
           className="flex-1 py-3.5 border border-slate-300 rounded-xl items-center justify-center bg-surface"
         >
-          <Text className="text-slate-700 text-base font-bold">{cancelLabel}</Text>
+          <Text className="text-slate-700 text-base font-bold">
+            {cancelLabel}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -36,7 +41,7 @@ export const CancelSaveFooter: React.FC<CancelSaveFooterProps> = ({
           onPress={onSave}
           disabled={loading || disabled}
           className={`flex-1 py-3.5 rounded-xl items-center justify-center ${
-            loading || disabled ? 'bg-primary/70' : 'bg-primary'
+            loading || disabled ? "bg-primary/70" : "bg-primary"
           }`}
         >
           {loading ? (

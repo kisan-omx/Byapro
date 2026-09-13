@@ -1,7 +1,7 @@
-import React from 'react';
-import { View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import PrimaryButton from '../common/PrimaryButton';
+import React from "react";
+import { View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import PrimaryButton from "../common/PrimaryButton";
 
 export interface PartyBottomActionsProps {
   onOpenAddPartyModal: () => void;

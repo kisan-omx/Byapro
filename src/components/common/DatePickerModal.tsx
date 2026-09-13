@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,9 +8,9 @@ import {
   ScrollView,
   TextInput,
   LayoutAnimation,
-} from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { convertToBS } from '../../utils/dateUtils';
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { convertToBS } from "../../utils/dateUtils";
 
 export interface DatePickerModalProps {
   visible: boolean;
@@ -20,52 +20,52 @@ export interface DatePickerModalProps {
 }
 
 const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 const FULL_BS_MONTHS = [
-  'Baisakh',
-  'Jestha',
-  'Asadh',
-  'Shrawan',
-  'Bhadau',
-  'Ashwin',
-  'Kartik',
-  'Mangsir',
-  'Poush',
-  'Magh',
-  'Falgun',
-  'Chaitra',
+  "Baisakh",
+  "Jestha",
+  "Asadh",
+  "Shrawan",
+  "Bhadau",
+  "Ashwin",
+  "Kartik",
+  "Mangsir",
+  "Poush",
+  "Magh",
+  "Falgun",
+  "Chaitra",
 ];
 
 const SHORT_MONTHS = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
-const DAY_NAMES_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const DAYS_OF_WEEK_HEADER = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const DAY_NAMES_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAYS_OF_WEEK_HEADER = ["S", "M", "T", "W", "T", "F", "S"];
 
 function parseManualDate(text: string): Date | null {
   const parts = text.split(/[/.-]/).map((p) => p.trim());
@@ -99,13 +99,19 @@ function DatePickerModalComponent({
   onSelectDate,
   initialDate,
 }: DatePickerModalProps) {
-  const [selectedDate, setSelectedDate] = useState<Date>(() => initialDate || new Date());
-  const [viewYear, setViewYear] = useState<number>(() => (initialDate || new Date()).getFullYear());
-  const [viewMonth, setViewMonth] = useState<number>(() => (initialDate || new Date()).getMonth());
+  const [selectedDate, setSelectedDate] = useState<Date>(
+    () => initialDate || new Date(),
+  );
+  const [viewYear, setViewYear] = useState<number>(() =>
+    (initialDate || new Date()).getFullYear(),
+  );
+  const [viewMonth, setViewMonth] = useState<number>(() =>
+    (initialDate || new Date()).getMonth(),
+  );
   const [isBSMode, setIsBSMode] = useState(false);
   const [isYearPickerOpen, setIsYearPickerOpen] = useState(false);
   const [isManualInputMode, setIsManualInputMode] = useState(false);
-  const [manualTextInput, setManualTextInput] = useState('');
+  const [manualTextInput, setManualTextInput] = useState("");
 
   const animateTransition = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -216,13 +222,20 @@ function DatePickerModalComponent({
       onSelectDate(formatted);
     }
     onClose();
-  }, [selectedDate, isManualInputMode, manualTextInput, isBSMode, onSelectDate, onClose]);
+  }, [
+    selectedDate,
+    isManualInputMode,
+    manualTextInput,
+    isBSMode,
+    onSelectDate,
+    onClose,
+  ]);
 
   // Selected date header text (e.g. "Tue, Sep 8" or "Tue, Bhadau 23")
   const selectedHeaderStr = useMemo(() => {
     const dayOfWeek = DAY_NAMES_SHORT[selectedDate.getDay()];
     if (isBSMode) {
-      const monthStr = FULL_BS_MONTHS[bsInfo.bsMonthIndex] || 'Bhadau';
+      const monthStr = FULL_BS_MONTHS[bsInfo.bsMonthIndex] || "Bhadau";
       return `${dayOfWeek}, ${monthStr} ${bsInfo.bsDay}`;
     }
     const monthStr = SHORT_MONTHS[selectedDate.getMonth()];
@@ -234,7 +247,7 @@ function DatePickerModalComponent({
   const currentMonthYearTitle = useMemo(() => {
     if (isBSMode) {
       const currentBs = convertToBS(new Date(viewYear, viewMonth, 15));
-      const monthStr = FULL_BS_MONTHS[currentBs.bsMonthIndex] || 'Bhadau';
+      const monthStr = FULL_BS_MONTHS[currentBs.bsMonthIndex] || "Bhadau";
       return `${monthStr} ${currentBs.bsYear}`;
     }
     return `${MONTH_NAMES[viewMonth]} ${viewYear}`;
@@ -259,16 +272,19 @@ function DatePickerModalComponent({
     }
   }, [viewYear, viewMonth, isBSMode]);
 
-  const handleSelectYear = useCallback((y: number) => {
-    animateTransition();
-    if (isBSMode) {
-      const adYear = y - 57;
-      setViewYear(adYear);
-    } else {
-      setViewYear(y);
-    }
-    setIsYearPickerOpen(false);
-  }, [isBSMode, animateTransition]);
+  const handleSelectYear = useCallback(
+    (y: number) => {
+      animateTransition();
+      if (isBSMode) {
+        const adYear = y - 57;
+        setViewYear(adYear);
+      } else {
+        setViewYear(y);
+      }
+      setIsYearPickerOpen(false);
+    },
+    [isBSMode, animateTransition],
+  );
 
   // Pre-calculate empty cells and day cells for instant 60fps rendering
   const gridCells = useMemo(() => {
@@ -280,28 +296,38 @@ function DatePickerModalComponent({
   if (!visible) return null;
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      onRequestClose={onClose}
+    >
       <TouchableWithoutFeedback onPress={onClose}>
         <View className="flex-1 bg-black/50 justify-center items-center px-4">
           <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
             <View className="w-full max-w-sm bg-surface rounded-3xl p-5 shadow-2xl">
               {/* Header Bar */}
               <View className="flex-row items-center justify-between mb-2">
-                <Text className="text-xs font-semibold text-text-secondary">Select date</Text>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={toggleBSMode}
-                >
+                <Text className="text-xs font-semibold text-text-secondary">
+                  Select date
+                </Text>
+                <TouchableOpacity activeOpacity={0.7} onPress={toggleBSMode}>
                   <Text className="text-xs font-bold text-primary">
-                    {isBSMode ? 'Switch to AD' : 'Switch to BS'}
+                    {isBSMode ? "Switch to AD" : "Switch to BS"}
                   </Text>
                 </TouchableOpacity>
               </View>
 
               {/* Big Selected Date Display */}
               <View className="flex-row items-center justify-between border-b border-border/40 pb-4 mb-4">
-                <Text className="text-2xl font-bold text-text">{selectedHeaderStr}</Text>
-                <TouchableOpacity activeOpacity={0.7} onPress={toggleManualInput} className="p-1">
+                <Text className="text-2xl font-bold text-text">
+                  {selectedHeaderStr}
+                </Text>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={toggleManualInput}
+                  className="p-1"
+                >
                   {isManualInputMode ? (
                     <Feather name="calendar" size={20} color="#1E293B" />
                   ) : (
@@ -315,7 +341,9 @@ function DatePickerModalComponent({
                 <View className="my-4 pt-2 pb-6">
                   <View className="border-2 border-primary rounded-2xl px-4 py-2.5 relative">
                     <View className="absolute -top-3 left-3 bg-surface px-1 z-10">
-                      <Text className="text-xs font-semibold text-primary">Enter Date</Text>
+                      <Text className="text-xs font-semibold text-primary">
+                        Enter Date
+                      </Text>
                     </View>
                     <TextInput
                       value={manualTextInput}
@@ -341,7 +369,7 @@ function DatePickerModalComponent({
                         {currentMonthYearTitle}
                       </Text>
                       <Feather
-                        name={isYearPickerOpen ? 'chevron-up' : 'chevron-down'}
+                        name={isYearPickerOpen ? "chevron-up" : "chevron-down"}
                         size={16}
                         color="#64748B"
                       />
@@ -349,11 +377,27 @@ function DatePickerModalComponent({
 
                     {!isYearPickerOpen && (
                       <View className="flex-row items-center space-x-3 gap-3">
-                        <TouchableOpacity activeOpacity={0.7} onPress={handlePrevMonth} className="p-1">
-                          <Feather name="chevron-left" size={20} color="#475569" />
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={handlePrevMonth}
+                          className="p-1"
+                        >
+                          <Feather
+                            name="chevron-left"
+                            size={20}
+                            color="#475569"
+                          />
                         </TouchableOpacity>
-                        <TouchableOpacity activeOpacity={0.7} onPress={handleNextMonth} className="p-1">
-                          <Feather name="chevron-right" size={20} color="#475569" />
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={handleNextMonth}
+                          className="p-1"
+                        >
+                          <Feather
+                            name="chevron-right"
+                            size={20}
+                            color="#475569"
+                          />
                         </TouchableOpacity>
                       </View>
                     )}
@@ -361,7 +405,10 @@ function DatePickerModalComponent({
 
                   {/* Year Grid View or Days Calendar View */}
                   {isYearPickerOpen ? (
-                    <ScrollView className="max-h-60" showsVerticalScrollIndicator={false}>
+                    <ScrollView
+                      className="max-h-60"
+                      showsVerticalScrollIndicator={false}
+                    >
                       <View className="flex-row flex-wrap items-center">
                         {yearList.years.map((y) => {
                           const isSelected = y === yearList.activeYear;
@@ -374,12 +421,12 @@ function DatePickerModalComponent({
                             >
                               <View
                                 className={`px-4 py-1.5 rounded-full items-center justify-center ${
-                                  isSelected ? 'bg-primary' : ''
+                                  isSelected ? "bg-primary" : ""
                                 }`}
                               >
                                 <Text
                                   className={`text-sm font-bold ${
-                                    isSelected ? 'text-white' : 'text-text'
+                                    isSelected ? "text-white" : "text-text"
                                   }`}
                                 >
                                   {y}
@@ -395,8 +442,13 @@ function DatePickerModalComponent({
                       {/* Days of Week Header */}
                       <View className="flex-row items-center justify-around mb-2">
                         {DAYS_OF_WEEK_HEADER.map((d, index) => (
-                          <View key={index} className="w-9 items-center justify-center">
-                            <Text className="text-xs font-bold text-text-secondary">{d}</Text>
+                          <View
+                            key={index}
+                            className="w-9 items-center justify-center"
+                          >
+                            <Text className="text-xs font-bold text-text-secondary">
+                              {d}
+                            </Text>
                           </View>
                         ))}
                       </View>
@@ -405,7 +457,10 @@ function DatePickerModalComponent({
                       <View className="flex-row flex-wrap items-center">
                         {/* Empty cells before start of month */}
                         {gridCells.emptyCells.map((_, index) => (
-                          <View key={`empty-${index}`} className="w-[14.28%] h-9" />
+                          <View
+                            key={`empty-${index}`}
+                            className="w-[14.28%] h-9"
+                          />
                         ))}
 
                         {/* Days of month */}
@@ -420,18 +475,20 @@ function DatePickerModalComponent({
                               key={`day-${dayNum}`}
                               activeOpacity={0.7}
                               onPress={() => {
-                                setSelectedDate(new Date(viewYear, viewMonth, dayNum));
+                                setSelectedDate(
+                                  new Date(viewYear, viewMonth, dayNum),
+                                );
                               }}
                               className="w-[14.28%] h-9 items-center justify-center"
                             >
                               <View
                                 className={`w-8 h-8 rounded-full items-center justify-center ${
-                                  isSelected ? 'bg-primary' : ''
+                                  isSelected ? "bg-primary" : ""
                                 }`}
                               >
                                 <Text
                                   className={`text-xs font-bold ${
-                                    isSelected ? 'text-white' : 'text-text'
+                                    isSelected ? "text-white" : "text-text"
                                   }`}
                                 >
                                   {dayNum}
@@ -448,11 +505,19 @@ function DatePickerModalComponent({
 
               {/* Footer Actions (Cancel & OK) */}
               <View className="flex-row items-center justify-end space-x-4 gap-4 mt-5 pt-2">
-                <TouchableOpacity activeOpacity={0.7} onPress={onClose} className="px-3 py-1.5">
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={onClose}
+                  className="px-3 py-1.5"
+                >
                   <Text className="text-sm font-bold text-primary">Cancel</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity activeOpacity={0.7} onPress={handleConfirm} className="px-3 py-1.5">
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={handleConfirm}
+                  className="px-3 py-1.5"
+                >
                   <Text className="text-sm font-bold text-primary">OK</Text>
                 </TouchableOpacity>
               </View>

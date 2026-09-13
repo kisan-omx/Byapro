@@ -1,5 +1,7 @@
-import React from 'react';
-import TransactionCard, { TransactionCardProps } from '../common/TransactionCard';
+import React from "react";
+import TransactionCard, {
+  TransactionCardProps,
+} from "../common/TransactionCard";
 
 export type { TransactionCardProps };
 

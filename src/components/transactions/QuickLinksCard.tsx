@@ -1,23 +1,29 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { QUICK_LINKS, QuickLinkItem } from '../../constants/transactionConstants';
+import React from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import {
+  QUICK_LINKS,
+  QuickLinkItem,
+} from "../../constants/transactionConstants";
 
 interface QuickLinksCardProps {
   onShowAll?: () => void;
   onOpenSettings?: () => void;
 }
 
-export default function QuickLinksCard({ onShowAll, onOpenSettings }: QuickLinksCardProps) {
+export default function QuickLinksCard({
+  onShowAll,
+  onOpenSettings,
+}: QuickLinksCardProps) {
   const router = useRouter();
 
   const handleAction = (link: QuickLinkItem) => {
-    if (link.action === 'add_txn') {
-      router.push('/quick-entry');
-    } else if (link.action === 'show_all' && onShowAll) {
+    if (link.action === "add_txn") {
+      router.push("/quick-entry");
+    } else if (link.action === "show_all" && onShowAll) {
       onShowAll();
-    } else if (link.action === 'txn_settings' && onOpenSettings) {
+    } else if (link.action === "txn_settings" && onOpenSettings) {
       onOpenSettings();
     }
   };
@@ -34,8 +40,14 @@ export default function QuickLinksCard({ onShowAll, onOpenSettings }: QuickLinks
             className="items-center flex-1"
             activeOpacity={0.7}
           >
-            <View className={`w-12 h-10 rounded-xl ${item.bgColor} items-center justify-center mb-1.5`}>
-              <Feather name={item.iconName as any} size={20} color={item.iconColor} />
+            <View
+              className={`w-12 h-10 rounded-xl ${item.bgColor} items-center justify-center mb-1.5`}
+            >
+              <Feather
+                name={item.iconName as any}
+                size={20}
+                color={item.iconColor}
+              />
             </View>
             <Text className="text-xs font-medium text-text-secondary text-center">
               {item.title}

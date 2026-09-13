@@ -1,24 +1,29 @@
-import { View, Text, TouchableOpacity } from 'react-native';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
+import { View, Text, TouchableOpacity } from "react-native";
+import { MaterialIcons, Feather } from "@expo/vector-icons";
 
-import { useRouter } from 'expo-router';
+import { useRouter } from "expo-router";
 
 interface ShortcutItemProps {
   title: string;
   iconName: keyof typeof MaterialIcons.glyphMap | keyof typeof Feather.glyphMap;
-  iconFamily?: 'MaterialIcons' | 'Feather';
+  iconFamily?: "MaterialIcons" | "Feather";
   route?: string;
 }
 
-const ShortcutItem = ({ title, iconName, iconFamily = 'MaterialIcons', route }: ShortcutItemProps) => {
+const ShortcutItem = ({
+  title,
+  iconName,
+  iconFamily = "MaterialIcons",
+  route,
+}: ShortcutItemProps) => {
   const router = useRouter();
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       className="w-[23%] items-center mb-6"
-      onPress={() => route ? router.push(route as any) : null}
+      onPress={() => (route ? router.push(route as any) : null)}
     >
       <View className="w-12 h-12 bg-primary-light rounded-full items-center justify-center mb-2">
-        {iconFamily === 'MaterialIcons' ? (
+        {iconFamily === "MaterialIcons" ? (
           <MaterialIcons name={iconName as any} size={24} color="#0EA5E9" />
         ) : (
           <Feather name={iconName as any} size={22} color="#0EA5E9" />
@@ -38,16 +43,22 @@ export default function Shortcuts() {
         <Text className="text-lg font-bold text-text">Shortcuts</Text>
         <TouchableOpacity className="flex-row items-center">
           <Feather name="edit" size={16} color="#0EA5E9" />
-          <Text className="text-sm font-semibold text-primary ml-1">Edit Menu</Text>
+          <Text className="text-sm font-semibold text-primary ml-1">
+            Edit Menu
+          </Text>
         </TouchableOpacity>
       </View>
-      
+
       <View className="flex-row flex-wrap justify-between">
-        <ShortcutItem title="Quick Entry" iconName="flash-on" route="/quick-entry" />
+        <ShortcutItem
+          title="Quick Entry"
+          iconName="flash-on"
+          route="/quick-entry"
+        />
         <ShortcutItem title="Sales Invoice" iconName="receipt" />
         <ShortcutItem title="Payment In" iconName="account-balance-wallet" />
         <ShortcutItem title="Payment Out" iconName="account-balance-wallet" />
-        
+
         <ShortcutItem title="Purchase" iconName="shopping-cart" />
         <ShortcutItem title="Add Item" iconName="inventory" />
         <ShortcutItem title="Expense" iconName="account-balance-wallet" />

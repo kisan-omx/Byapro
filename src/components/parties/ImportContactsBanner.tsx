@@ -1,13 +1,15 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { Feather, Ionicons } from '@expo/vector-icons';
-import { ADD_PARTY_CONSTANTS } from '../../constants/addPartyConstants';
+import React from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { Feather, Ionicons } from "@expo/vector-icons";
+import { ADD_PARTY_CONSTANTS } from "../../constants/addPartyConstants";
 
 export interface ImportContactsBannerProps {
   onPress: () => void;
 }
 
-export const ImportContactsBanner: React.FC<ImportContactsBannerProps> = ({ onPress }) => {
+export const ImportContactsBanner: React.FC<ImportContactsBannerProps> = ({
+  onPress,
+}) => {
   return (
     <TouchableOpacity
       activeOpacity={0.8}

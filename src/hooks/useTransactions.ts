@@ -1,9 +1,16 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Alert } from 'react-native';
-import { DateFilterType, TransactionItem, TransactionType } from '../types/transaction';
-import { fetchTransactions, TransactionCursor } from '../services/transactionService';
-import { transactionEvents } from '../services/transactionEvents';
-import { auth } from '../lib/firebase';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Alert } from "react-native";
+import {
+  DateFilterType,
+  TransactionItem,
+  TransactionType,
+} from "../types/transaction";
+import {
+  fetchTransactions,
+  TransactionCursor,
+} from "../services/transactionService";
+import { transactionEvents } from "../services/transactionEvents";
+import { auth } from "../lib/firebase";
 import {
   getBusinessId,
   getOrCreateParty,
@@ -14,7 +21,7 @@ import {
   recordPaymentOut,
   recordExpense,
   generateInvoiceNumber,
-} from '../services/quickEntryService';
+} from "../services/quickEntryService";
 
 export function useTransactions() {
   const [items, setItems] = useState<TransactionItem[]>([]);
@@ -23,13 +30,19 @@ export function useTransactions() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
 
-  const [searchQuery, setSearchQueryState] = useState<string>('');
-  const [dateFilter, setDateFilterState] = useState<DateFilterType>('all');
-  const [typeFilter, setTypeFilterState] = useState<TransactionType | 'All'>('All');
+  const [searchQuery, setSearchQueryState] = useState<string>("");
+  const [dateFilter, setDateFilterState] = useState<DateFilterType>("all");
+  const [typeFilter, setTypeFilterState] = useState<TransactionType | "All">(
+    "All",
+  );
 
   // Keyset cursor & preloading state refs
   const cursorRef = useRef<TransactionCursor | undefined>(undefined);
-  const preloadedBufferRef = useRef<{ items: TransactionItem[]; nextCursor?: TransactionCursor; hasMore: boolean } | null>(null);
+  const preloadedBufferRef = useRef<{
+    items: TransactionItem[];
+    nextCursor?: TransactionCursor;
+    hasMore: boolean;
+  } | null>(null);
   const isFetchingRef = useRef<boolean>(false);
   const isPreloadingRef = useRef<boolean>(false);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -43,7 +56,11 @@ export function useTransactions() {
     const unsubSaved = transactionEvents.onSaved(({ tempId, realItem }) => {
       setItems((prev) =>
         prev.map((item) =>
-          item.id === tempId ? (realItem ? realItem : { ...item, syncStatus: 'saved' }) : item,
+          item.id === tempId
+            ? realItem
+              ? realItem
+              : { ...item, syncStatus: "saved" }
+            : item,
         ),
       );
     });
@@ -51,7 +68,9 @@ export function useTransactions() {
     const unsubFailed = transactionEvents.onFailed(({ tempId, errorMsg }) => {
       setItems((prev) =>
         prev.map((item) =>
-          item.id === tempId ? { ...item, syncStatus: 'failed', syncError: errorMsg } : item,
+          item.id === tempId
+            ? { ...item, syncStatus: "failed", syncError: errorMsg }
+            : item,
         ),
       );
     });
@@ -62,19 +81,21 @@ export function useTransactions() {
       // Mark card state as saving immediately
       setItems((prev) =>
         prev.map((item) =>
-          item.id === retryItem.id ? { ...item, syncStatus: 'saving', syncError: undefined } : item,
+          item.id === retryItem.id
+            ? { ...item, syncStatus: "saving", syncError: undefined }
+            : item,
         ),
       );
 
       try {
         const user = auth.currentUser;
-        if (!user) throw new Error('Please log in to record transactions.');
+        if (!user) throw new Error("Please log in to record transactions.");
         const businessId = await getBusinessId(user.uid);
-        if (!businessId) throw new Error('Could not find your business.');
+        if (!businessId) throw new Error("Could not find your business.");
 
         const { entryType, amountNum, selectedParty } = retryItem.payload;
         switch (entryType) {
-          case 'Sale': {
+          case "Sale": {
             const isCash = !selectedParty;
             const partyId = selectedParty
               ? await getOrCreateParty(businessId, selectedParty)
@@ -85,11 +106,11 @@ export function useTransactions() {
               invoiceNumber: generateInvoiceNumber(),
               totalAmount: amountNum,
               receivedAmount: isCash ? amountNum : 0,
-              paymentType: isCash ? 'cash' : 'credit',
+              paymentType: isCash ? "cash" : "credit",
             });
             break;
           }
-          case 'Purchase': {
+          case "Purchase": {
             const isCash = !selectedParty;
             const partyId = selectedParty
               ? await getOrCreateParty(businessId, selectedParty)
@@ -99,37 +120,40 @@ export function useTransactions() {
               partyId,
               totalAmount: amountNum,
               paidAmount: isCash ? amountNum : 0,
-              paymentType: isCash ? 'cash' : 'credit',
+              paymentType: isCash ? "cash" : "credit",
             });
             break;
           }
-          case 'Payment In': {
+          case "Payment In": {
             const partyId = await getOrCreateParty(businessId, selectedParty!);
             await recordPaymentIn({
               businessId,
               partyId,
               amount: amountNum,
-              paymentMethod: 'cash',
+              paymentMethod: "cash",
             });
             break;
           }
-          case 'Payment Out': {
+          case "Payment Out": {
             const partyId = await getOrCreateParty(businessId, selectedParty!);
             await recordPaymentOut({
               businessId,
               partyId,
               amount: amountNum,
-              paymentMethod: 'cash',
+              paymentMethod: "cash",
             });
             break;
           }
-          case 'Expense': {
-            const categoryId = await getOrCreateExpenseCategory(businessId, selectedParty!.name);
+          case "Expense": {
+            const categoryId = await getOrCreateExpenseCategory(
+              businessId,
+              selectedParty!.name,
+            );
             await recordExpense({
               businessId,
               categoryId,
               amount: amountNum,
-              paymentMethod: 'cash',
+              paymentMethod: "cash",
             });
             break;
           }
@@ -138,11 +162,12 @@ export function useTransactions() {
         // Successfully saved on retry!
         transactionEvents.emitSaved(retryItem.id);
       } catch (err: any) {
-        console.error('Retry save failed:', err);
+        console.error("Retry save failed:", err);
         transactionEvents.emitFailed(retryItem.id, err?.message);
         Alert.alert(
-          'Retry Failed',
-          err?.message || 'Something went wrong while saving. Tap card to try again.',
+          "Retry Failed",
+          err?.message ||
+            "Something went wrong while saving. Tap card to try again.",
         );
       }
     });
@@ -157,7 +182,12 @@ export function useTransactions() {
 
   // Background prefetch function
   const prefetchNextPage = useCallback(
-    async (currentCursor?: TransactionCursor, search = searchQuery, date = dateFilter, type = typeFilter) => {
+    async (
+      currentCursor?: TransactionCursor,
+      search = searchQuery,
+      date = dateFilter,
+      type = typeFilter,
+    ) => {
       if (!currentCursor || isPreloadingRef.current) return;
       const user = auth.currentUser;
       if (!user) return;
@@ -174,7 +204,7 @@ export function useTransactions() {
 
         preloadedBufferRef.current = res;
       } catch (err) {
-        console.error('Background prefetch error:', err);
+        console.error("Background prefetch error:", err);
       } finally {
         isPreloadingRef.current = false;
       }
@@ -198,7 +228,11 @@ export function useTransactions() {
       cursorRef.current = undefined;
 
       try {
-        const { items: newItems, nextCursor, hasMore: more } = await fetchTransactions({
+        const {
+          items: newItems,
+          nextCursor,
+          hasMore: more,
+        } = await fetchTransactions({
           firebaseUid: user.uid,
           cursor: undefined,
           searchQuery: search,
@@ -215,7 +249,7 @@ export function useTransactions() {
           prefetchNextPage(nextCursor, search, date, type);
         }
       } catch (error) {
-        console.error('Error fetching transactions:', error);
+        console.error("Error fetching transactions:", error);
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -244,7 +278,10 @@ export function useTransactions() {
     if (!user) return;
 
     // Check if preloaded buffer is ready
-    if (preloadedBufferRef.current && preloadedBufferRef.current.items.length > 0) {
+    if (
+      preloadedBufferRef.current &&
+      preloadedBufferRef.current.items.length > 0
+    ) {
       const buffer = preloadedBufferRef.current;
       preloadedBufferRef.current = null;
 
@@ -265,7 +302,11 @@ export function useTransactions() {
     setLoadingMore(true);
 
     try {
-      const { items: newItems, nextCursor, hasMore: more } = await fetchTransactions({
+      const {
+        items: newItems,
+        nextCursor,
+        hasMore: more,
+      } = await fetchTransactions({
         firebaseUid: user.uid,
         cursor: cursorRef.current,
         searchQuery,
@@ -281,12 +322,20 @@ export function useTransactions() {
         prefetchNextPage(nextCursor);
       }
     } catch (error) {
-      console.error('Error loading more transactions:', error);
+      console.error("Error loading more transactions:", error);
     } finally {
       setLoadingMore(false);
       isFetchingRef.current = false;
     }
-  }, [loadingMore, hasMore, loading, searchQuery, dateFilter, typeFilter, prefetchNextPage]);
+  }, [
+    loadingMore,
+    hasMore,
+    loading,
+    searchQuery,
+    dateFilter,
+    typeFilter,
+    prefetchNextPage,
+  ]);
 
   // Filter setters (debounced text search & guarded filter updates)
   const setSearchQuery = useCallback(
@@ -295,9 +344,9 @@ export function useTransactions() {
       if (searchDebounceRef.current) {
         clearTimeout(searchDebounceRef.current);
       }
-      if (query.trim() === '') {
+      if (query.trim() === "") {
         setLoading(true);
-        loadInitialData('', dateFilter, typeFilter);
+        loadInitialData("", dateFilter, typeFilter);
       } else {
         searchDebounceRef.current = setTimeout(() => {
           setLoading(true);
@@ -319,7 +368,7 @@ export function useTransactions() {
   );
 
   const setTypeFilter = useCallback(
-    (filter: TransactionType | 'All') => {
+    (filter: TransactionType | "All") => {
       if (filter === typeFilter) return;
       setTypeFilterState(filter);
       setLoading(true);
@@ -329,11 +378,11 @@ export function useTransactions() {
   );
 
   const resetFilters = useCallback(() => {
-    setSearchQueryState('');
-    setDateFilterState('all');
-    setTypeFilterState('All');
+    setSearchQueryState("");
+    setDateFilterState("all");
+    setTypeFilterState("All");
     setLoading(true);
-    loadInitialData('', 'all', 'All');
+    loadInitialData("", "all", "All");
   }, [loadInitialData]);
 
   return {

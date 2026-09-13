@@ -1,8 +1,12 @@
-import { supabase } from '../lib/supabase';
-import { getBusinessId } from './quickEntryService';
-import { DateFilterType, TransactionItem, TransactionType } from '../types/transaction';
-import { PAGE_SIZE } from '../constants/transactionConstants';
-import { getDateFilterBoundaries, formatDate } from '../utils/dateUtils';
+import { supabase } from "../lib/supabase";
+import { getBusinessId } from "./quickEntryService";
+import {
+  DateFilterType,
+  TransactionItem,
+  TransactionType,
+} from "../types/transaction";
+import { PAGE_SIZE } from "../constants/transactionConstants";
+import { getDateFilterBoundaries, formatDate } from "../utils/dateUtils";
 
 export interface TransactionCursor {
   lastCreatedAt: string;
@@ -14,18 +18,22 @@ export interface FetchTransactionsParams {
   cursor?: TransactionCursor;
   searchQuery?: string;
   dateFilter?: DateFilterType;
-  typeFilter?: TransactionType | 'All';
+  typeFilter?: TransactionType | "All";
   limit?: number;
 }
 
 export async function fetchTransactions({
   firebaseUid,
   cursor,
-  searchQuery = '',
-  dateFilter = 'all',
-  typeFilter = 'All',
+  searchQuery = "",
+  dateFilter = "all",
+  typeFilter = "All",
   limit = PAGE_SIZE,
-}: FetchTransactionsParams): Promise<{ items: TransactionItem[]; nextCursor?: TransactionCursor; hasMore: boolean }> {
+}: FetchTransactionsParams): Promise<{
+  items: TransactionItem[];
+  nextCursor?: TransactionCursor;
+  hasMore: boolean;
+}> {
   const businessId = await getBusinessId(firebaseUid);
   if (!businessId) {
     return { items: [], hasMore: false };
@@ -38,33 +46,37 @@ export async function fetchTransactions({
   const fetchLimit = limit + 1;
 
   let q = supabase
-    .from('unified_transactions')
-    .select('id, raw_id, business_id, party_id, party_name, type, index_no, total_amount, secondary_amount, secondary_label, status, note, payment_method, created_at')
-    .eq('business_id', businessId)
-    .order('created_at', { ascending: false })
-    .order('raw_id', { ascending: false })
+    .from("unified_transactions")
+    .select(
+      "id, raw_id, business_id, party_id, party_name, type, index_no, total_amount, secondary_amount, secondary_label, status, note, payment_method, created_at",
+    )
+    .eq("business_id", businessId)
+    .order("created_at", { ascending: false })
+    .order("raw_id", { ascending: false })
     .limit(fetchLimit);
 
-  if (typeFilter !== 'All') {
-    q = q.eq('type', typeFilter);
+  if (typeFilter !== "All") {
+    q = q.eq("type", typeFilter);
   }
 
-  if (startDateIso) q = q.gte('created_at', startDateIso);
-  if (endDateIso) q = q.lt('created_at', endDateIso);
+  if (startDateIso) q = q.gte("created_at", startDateIso);
+  if (endDateIso) q = q.lt("created_at", endDateIso);
 
   if (cursor?.lastCreatedAt) {
-    q = q.lte('created_at', cursor.lastCreatedAt);
+    q = q.lte("created_at", cursor.lastCreatedAt);
   }
 
   const cleanQuery = searchQuery.trim();
   if (cleanQuery) {
-    q = q.or(`party_name.ilike.%${cleanQuery}%,note.ilike.%${cleanQuery}%,index_no.ilike.%${cleanQuery}%`);
+    q = q.or(
+      `party_name.ilike.%${cleanQuery}%,note.ilike.%${cleanQuery}%,index_no.ilike.%${cleanQuery}%`,
+    );
   }
 
   const { data, error } = await q;
 
   if (error || !data) {
-    console.error('Error querying unified_transactions view:', error);
+    console.error("Error querying unified_transactions view:", error);
     return { items: [], hasMore: false };
   }
 
@@ -75,7 +87,8 @@ export async function fetchTransactions({
     filteredData = data.filter((row) => {
       const itemTime = new Date(row.created_at).getTime();
       if (itemTime < cursorTime) return true;
-      if (itemTime === cursorTime) return String(row.raw_id).localeCompare(cursor.lastId) < 0;
+      if (itemTime === cursorTime)
+        return String(row.raw_id).localeCompare(cursor.lastId) < 0;
       return false;
     });
   }
@@ -100,7 +113,10 @@ export async function fetchTransactions({
 
   const lastItem = items[items.length - 1];
   const nextCursor: TransactionCursor | undefined = lastItem
-    ? { lastCreatedAt: lastItem.rawDate, lastId: lastItem.id.replace(/^(sale|purchase|pi|po|exp|sr|pr)-/, '') }
+    ? {
+        lastCreatedAt: lastItem.rawDate,
+        lastId: lastItem.id.replace(/^(sale|purchase|pi|po|exp|sr|pr)-/, ""),
+      }
     : undefined;
 
   return {
@@ -116,23 +132,25 @@ export async function fetchSingleTransaction(
   type: TransactionType,
 ): Promise<TransactionItem | null> {
   const prefixMap: Record<TransactionType, string> = {
-    Sale: 'sale-',
-    Purchase: 'purchase-',
-    PaymentIn: 'pi-',
-    PaymentOut: 'po-',
-    Expense: 'exp-',
-    SaleReturn: 'sr-',
-    PurchaseReturn: 'pr-',
-    Quotation: 'q-',
+    Sale: "sale-",
+    Purchase: "purchase-",
+    PaymentIn: "pi-",
+    PaymentOut: "po-",
+    Expense: "exp-",
+    SaleReturn: "sr-",
+    PurchaseReturn: "pr-",
+    Quotation: "q-",
   };
-  const prefix = prefixMap[type] || '';
+  const prefix = prefixMap[type] || "";
   const targetId = `${prefix}${rawId}`;
 
   const { data, error } = await supabase
-    .from('unified_transactions')
-    .select('id, raw_id, business_id, party_id, party_name, type, index_no, total_amount, secondary_amount, secondary_label, status, note, payment_method, created_at')
-    .eq('business_id', businessId)
-    .eq('id', targetId)
+    .from("unified_transactions")
+    .select(
+      "id, raw_id, business_id, party_id, party_name, type, index_no, total_amount, secondary_amount, secondary_label, status, note, payment_method, created_at",
+    )
+    .eq("business_id", businessId)
+    .eq("id", targetId)
     .maybeSingle();
 
   if (error || !data) return null;
@@ -150,7 +168,6 @@ export async function fetchSingleTransaction(
     rawDate: data.created_at,
     note: data.note,
     paymentMethod: data.payment_method,
-    syncStatus: 'saved',
+    syncStatus: "saved",
   };
 }
-

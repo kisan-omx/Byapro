@@ -1,13 +1,24 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
-import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
-import { Party } from '../quick-entry/PartySelectionModal';
-import { EntryType } from '../quick-entry/QuickEntryTabs';
-import PaymentTypeModal from './PaymentTypeModal';
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+  Alert,
+} from "react-native";
+import {
+  Ionicons,
+  MaterialCommunityIcons,
+  FontAwesome5,
+} from "@expo/vector-icons";
+import { Party } from "../quick-entry/PartySelectionModal";
+import { EntryType } from "../quick-entry/QuickEntryTabs";
+import PaymentTypeModal from "./PaymentTypeModal";
 
 export interface ReusableTransactionFormProps {
   entryType: EntryType;
-  paymentType?: 'credit' | 'cash';
+  paymentType?: "credit" | "cash";
   invoiceNo: string;
   onInvoiceNoChange?: (text: string) => void;
   onInvoiceNoPress?: () => void;
@@ -30,7 +41,7 @@ export interface ReusableTransactionFormProps {
 
 export default function ReusableTransactionForm({
   entryType,
-  paymentType = 'cash',
+  paymentType = "cash",
   invoiceNo,
   onInvoiceNoChange,
   onInvoiceNoPress,
@@ -45,7 +56,7 @@ export default function ReusableTransactionForm({
   showAddItems = true,
   onAddItemsPress,
   onBarcodeScanPress,
-  note = '',
+  note = "",
   onNoteChange,
   partyError,
   amountError,
@@ -56,44 +67,80 @@ export default function ReusableTransactionForm({
   const [isNoteFocused, setIsNoteFocused] = React.useState(false);
 
   const [isReceivedChecked, setIsReceivedChecked] = React.useState(false);
-  const [receivedAmount, setReceivedAmount] = React.useState('');
-  const [paymentMethod, setPaymentMethod] = React.useState('Cash');
-  const [isPaymentTypeModalOpen, setIsPaymentTypeModalOpen] = React.useState(false);
+  const [receivedAmount, setReceivedAmount] = React.useState("");
+  const [paymentMethod, setPaymentMethod] = React.useState("Cash");
+  const [isPaymentTypeModalOpen, setIsPaymentTypeModalOpen] =
+    React.useState(false);
 
   const renderPaymentPillIcon = (method: string) => {
     switch (method.toLowerCase()) {
-      case 'cheque':
-        return <FontAwesome5 name="money-check" size={14} color="#D97706" style={{ marginRight: 6 }} />;
-      case 'bank':
-        return <MaterialCommunityIcons name="bank" size={16} color="#0284C7" style={{ marginRight: 6 }} />;
-      case 'online':
-        return <Ionicons name="card-outline" size={16} color="#9333EA" style={{ marginRight: 6 }} />;
+      case "cheque":
+        return (
+          <FontAwesome5
+            name="money-check"
+            size={14}
+            color="#D97706"
+            style={{ marginRight: 6 }}
+          />
+        );
+      case "bank":
+        return (
+          <MaterialCommunityIcons
+            name="bank"
+            size={16}
+            color="#0284C7"
+            style={{ marginRight: 6 }}
+          />
+        );
+      case "online":
+        return (
+          <Ionicons
+            name="card-outline"
+            size={16}
+            color="#9333EA"
+            style={{ marginRight: 6 }}
+          />
+        );
       default:
-        return <MaterialCommunityIcons name="cash-multiple" size={16} color="#16A34A" style={{ marginRight: 6 }} />;
+        return (
+          <MaterialCommunityIcons
+            name="cash-multiple"
+            size={16}
+            color="#16A34A"
+            style={{ marginRight: 6 }}
+          />
+        );
     }
   };
 
   const amountInputRef = React.useRef<TextInput>(null);
   const receivedInputRef = React.useRef<TextInput>(null);
 
-  const isCash = paymentType === 'cash';
+  const isCash = paymentType === "cash";
   const hasAmountEntered = !!amount.trim() && parseFloat(amount) > 0;
-  const isDirectPaymentType = entryType === 'Payment In' || entryType === 'Payment Out';
+  const isDirectPaymentType =
+    entryType === "Payment In" || entryType === "Payment Out";
   const isItemizedType =
-    entryType === 'Sale' ||
-    entryType === 'Purchase' ||
-    entryType === 'Sale Return' ||
-    entryType === 'Purchase Return';
+    entryType === "Sale" ||
+    entryType === "Purchase" ||
+    entryType === "Sale Return" ||
+    entryType === "Purchase Return";
 
-  const isReceivedType = entryType === 'Sale' || entryType === 'Purchase Return' || entryType === 'Payment In';
-  const receivedLabel = isReceivedType ? 'Received' : 'Paid';
-  const showReceivedCheckbox = entryType === 'Sale' || entryType === 'Purchase';
+  const isReceivedType =
+    entryType === "Sale" ||
+    entryType === "Purchase Return" ||
+    entryType === "Payment In";
+  const receivedLabel = isReceivedType ? "Received" : "Paid";
+  const showReceivedCheckbox = entryType === "Sale" || entryType === "Purchase";
 
   // Calculations for Balance Due
   const totalNum = parseFloat(amount) || 0;
-  const receivedNum = receivedAmount.trim() !== ''
-    ? (parseFloat(receivedAmount) || 0)
-    : (isReceivedChecked ? totalNum : 0);
+  const receivedNum =
+    receivedAmount.trim() !== ""
+      ? parseFloat(receivedAmount) || 0
+      : isReceivedChecked
+        ? totalNum
+        : 0;
   const balanceDue = Math.max(0, totalNum - receivedNum);
 
   const handleToggleReceived = React.useCallback(() => {
@@ -101,10 +148,10 @@ export default function ReusableTransactionForm({
       const next = !prev;
       if (next) {
         // Toggled ON: Set full total amount
-        setReceivedAmount(totalNum > 0 ? totalNum.toString() : '');
+        setReceivedAmount(totalNum > 0 ? totalNum.toString() : "");
       } else {
         // Toggled OFF: Clear received amount (resets to 0)
-        setReceivedAmount('');
+        setReceivedAmount("");
       }
       return next;
     });
@@ -113,57 +160,67 @@ export default function ReusableTransactionForm({
   // Derive labels based on transaction entry type
   const getRefLabel = () => {
     switch (entryType) {
-      case 'Sale':
-        return 'Invoice No.';
-      case 'Purchase':
-        return 'Bill No.';
-      case 'Payment In':
-        return 'Receipt No.';
-      case 'Payment Out':
-        return 'Voucher No.';
-      case 'Sale Return':
-      case 'Purchase Return':
-        return 'Return No.';
-      case 'Expense':
-        return 'Expense No.';
+      case "Sale":
+        return "Invoice No.";
+      case "Purchase":
+        return "Bill No.";
+      case "Payment In":
+        return "Receipt No.";
+      case "Payment Out":
+        return "Voucher No.";
+      case "Sale Return":
+      case "Purchase Return":
+        return "Return No.";
+      case "Expense":
+        return "Expense No.";
       default:
-        return 'Ref No.';
+        return "Ref No.";
     }
   };
 
-  const isPartyRequired = entryType === 'Payment In' || entryType === 'Payment Out' || entryType === 'Expense' || !isCash;
+  const isPartyRequired =
+    entryType === "Payment In" ||
+    entryType === "Payment Out" ||
+    entryType === "Expense" ||
+    !isCash;
 
   const getPartyLabel = () => {
     switch (entryType) {
-      case 'Sale':
-      case 'Sale Return':
-        return isCash ? 'Billing Name (Optional)' : 'Customer';
-      case 'Purchase':
-      case 'Purchase Return':
-        return isCash ? 'Billing Name (Optional)' : 'Supplier';
-      case 'Payment In':
-        return 'Customer';
-      case 'Payment Out':
-        return 'Supplier';
-      case 'Expense':
-        return 'Category';
+      case "Sale":
+      case "Sale Return":
+        return isCash ? "Billing Name (Optional)" : "Customer";
+      case "Purchase":
+      case "Purchase Return":
+        return isCash ? "Billing Name (Optional)" : "Supplier";
+      case "Payment In":
+        return "Customer";
+      case "Payment Out":
+        return "Supplier";
+      case "Expense":
+        return "Category";
       default:
-        return isCash ? 'Billing Name (Optional)' : 'Party';
+        return isCash ? "Billing Name (Optional)" : "Party";
     }
   };
 
   const partyLabel = getPartyLabel();
   const refLabel = getRefLabel();
 
-  const isReturnEntry = entryType === 'Sale Return' || entryType === 'Purchase Return';
+  const isReturnEntry =
+    entryType === "Sale Return" || entryType === "Purchase Return";
 
   return (
-    <ScrollView className="flex-1 bg-slate-100" keyboardShouldPersistTaps="handled">
+    <ScrollView
+      className="flex-1 bg-slate-100"
+      keyboardShouldPersistTaps="handled"
+    >
       {/* ── Subheader Details Row (Ref No / Date) ───────────────── */}
       <View className="flex-row bg-surface border-b border-slate-200">
         {/* Ref / Invoice Number Column (Editable TextInput, No Arrow) */}
         <View className="flex-1 px-4 py-2.5 border-r border-slate-200 justify-center">
-          <Text className="text-xs text-slate-400 font-medium mb-0.5">{refLabel}</Text>
+          <Text className="text-xs text-slate-400 font-medium mb-0.5">
+            {refLabel}
+          </Text>
           <TextInput
             value={invoiceNo}
             onChangeText={onInvoiceNoChange}
@@ -181,7 +238,9 @@ export default function ReusableTransactionForm({
           className="flex-1 px-4 py-3 justify-center"
           activeOpacity={0.7}
         >
-          <Text className="text-xs text-slate-400 font-medium mb-0.5">Date</Text>
+          <Text className="text-xs text-slate-400 font-medium mb-0.5">
+            Date
+          </Text>
           <View className="flex-row items-center justify-between">
             <Text className="text-sm font-semibold text-text">{date}</Text>
             <Ionicons name="chevron-down" size={16} color="#94A3B8" />
@@ -195,10 +254,10 @@ export default function ReusableTransactionForm({
         <View
           className={`rounded-lg px-3.5 py-0.5 bg-surface relative mb-5 ${
             partyError
-              ? 'border-2 border-red-500'
+              ? "border-2 border-red-500"
               : isPartyFocused
-              ? 'border-2 border-primary'
-              : 'border border-slate-300'
+                ? "border-2 border-primary"
+                : "border border-slate-300"
           }`}
         >
           {/* Floating/Top Tag Label */}
@@ -206,13 +265,14 @@ export default function ReusableTransactionForm({
             <Text
               className={`text-xs font-semibold ${
                 partyError
-                  ? 'text-red-500'
+                  ? "text-red-500"
                   : isPartyFocused
-                  ? 'text-primary'
-                  : 'text-slate-500'
+                    ? "text-primary"
+                    : "text-slate-500"
               }`}
             >
-              {partyLabel} {isPartyRequired && <Text className="text-red-500">*</Text>}
+              {partyLabel}{" "}
+              {isPartyRequired && <Text className="text-red-500">*</Text>}
             </Text>
           </View>
 
@@ -222,7 +282,11 @@ export default function ReusableTransactionForm({
               onChangeText={onPartyNameChange}
               onFocus={() => setIsPartyFocused(true)}
               onBlur={() => setIsPartyFocused(false)}
-              placeholder={isPartyRequired ? `Enter ${partyLabel}` : 'Billing Name (Optional)'}
+              placeholder={
+                isPartyRequired
+                  ? `Enter ${partyLabel}`
+                  : "Billing Name (Optional)"
+              }
               placeholderTextColor="#94A3B8"
               className="flex-1 text-base font-medium text-text py-2 p-0"
               autoFocus={true}
@@ -236,7 +300,11 @@ export default function ReusableTransactionForm({
             </TouchableOpacity>
           </View>
         </View>
-        {partyError && <Text className="text-xs text-red-500 font-medium -mt-4 mb-4 px-1">{partyError}</Text>}
+        {partyError && (
+          <Text className="text-xs text-red-500 font-medium -mt-4 mb-4 px-1">
+            {partyError}
+          </Text>
+        )}
 
         {/* Side-by-Side Original Bill/Invoice Date & Ref No. Inputs (ONLY for Sale Return & Purchase Return) */}
         {isReturnEntry && (
@@ -249,7 +317,7 @@ export default function ReusableTransactionForm({
             >
               <View className="absolute -top-3 left-3 bg-surface px-1.5 z-10">
                 <Text className="text-xs font-semibold text-slate-500">
-                  {entryType === 'Sale Return' ? 'Invoice Date' : 'Bill Date'}
+                  {entryType === "Sale Return" ? "Invoice Date" : "Bill Date"}
                 </Text>
               </View>
               <View className="flex-row items-center justify-between">
@@ -262,7 +330,7 @@ export default function ReusableTransactionForm({
             <View className="flex-1 rounded-lg px-3.5 bg-surface border border-slate-300 relative justify-center min-h-[44px]">
               <View className="absolute -top-3 left-3 bg-surface px-1.5 z-10">
                 <Text className="text-xs font-semibold text-slate-500">
-                  {entryType === 'Sale Return' ? 'Invoice No.' : 'Bill No.'}
+                  {entryType === "Sale Return" ? "Invoice No." : "Bill No."}
                 </Text>
               </View>
               <TextInput
@@ -279,11 +347,13 @@ export default function ReusableTransactionForm({
         )}
 
         {/* Current Party Balance if selected */}
-        {selectedParty && selectedParty.type !== 'ExpenseCategory' && (
+        {selectedParty && selectedParty.type !== "ExpenseCategory" && (
           <View className="mb-5 px-1 flex-row items-center">
             <Text className="text-xs text-slate-500 font-medium">
-              Current Balance:{' '}
-              <Text className="font-bold text-slate-800">Rs. {selectedParty.balance || 0}</Text>
+              Current Balance:{" "}
+              <Text className="font-bold text-slate-800">
+                Rs. {selectedParty.balance || 0}
+              </Text>
             </Text>
           </View>
         )}
@@ -300,8 +370,12 @@ export default function ReusableTransactionForm({
               <View className="w-5 h-5 rounded-full bg-primary items-center justify-center mr-2">
                 <Ionicons name="add" size={14} color="white" />
               </View>
-              <Text className="text-primary font-bold text-sm mr-1">Add Items</Text>
-              <Text className="text-slate-400 font-normal text-sm">(Optional)</Text>
+              <Text className="text-primary font-bold text-sm mr-1">
+                Add Items
+              </Text>
+              <Text className="text-slate-400 font-normal text-sm">
+                (Optional)
+              </Text>
             </TouchableOpacity>
 
             {/* Barcode Scanner Button (Same Height, Increased Width w-16) */}
@@ -310,7 +384,11 @@ export default function ReusableTransactionForm({
               activeOpacity={0.7}
               className="w-16 border border-slate-300 bg-surface min-h-[44px] rounded-lg items-center justify-center shadow-xs"
             >
-              <MaterialCommunityIcons name="barcode-scan" size={24} color="#0EA5E9" />
+              <MaterialCommunityIcons
+                name="barcode-scan"
+                size={24}
+                color="#0EA5E9"
+              />
             </TouchableOpacity>
           </View>
         )}
@@ -323,15 +401,19 @@ export default function ReusableTransactionForm({
           <View>
             {/* Row 1: Received / Paid Input Row (No Checkbox) */}
             <View className="flex-row items-center justify-between h-8">
-              <Text className="text-base font-bold text-slate-800">{receivedLabel}</Text>
+              <Text className="text-base font-bold text-slate-800">
+                {receivedLabel}
+              </Text>
               <TouchableOpacity
                 onPress={() => amountInputRef.current?.focus()}
                 activeOpacity={1}
                 className={`flex-row items-center h-8 w-[150px] justify-end border-b border-dashed ${
-                  isAmountFocused ? 'border-primary' : 'border-slate-400'
+                  isAmountFocused ? "border-primary" : "border-slate-400"
                 }`}
               >
-                <Text className="text-base font-bold text-slate-800 mr-2">Rs</Text>
+                <Text className="text-base font-bold text-slate-800 mr-2">
+                  Rs
+                </Text>
                 <TextInput
                   ref={amountInputRef}
                   value={amount}
@@ -345,14 +427,22 @@ export default function ReusableTransactionForm({
                 />
               </TouchableOpacity>
             </View>
-            {amountError && <Text className="text-xs text-red-500 font-medium text-right mt-1">{amountError}</Text>}
+            {amountError && (
+              <Text className="text-xs text-red-500 font-medium text-right mt-1">
+                {amountError}
+              </Text>
+            )}
 
             {/* Row 2: Total Amount Summary Row in Green (Revealed when amount entered) */}
             {hasAmountEntered && (
               <View className="mt-3.5 flex-row items-center justify-between h-8">
-                <Text className="text-base font-bold text-emerald-600">Total Amount</Text>
+                <Text className="text-base font-bold text-emerald-600">
+                  Total Amount
+                </Text>
                 <View className="flex-row items-center h-8 w-[150px] justify-end">
-                  <Text className="text-base font-bold text-emerald-600 mr-2">Rs</Text>
+                  <Text className="text-base font-bold text-emerald-600 mr-2">
+                    Rs
+                  </Text>
                   <Text className="text-lg font-bold text-emerald-600 text-right flex-1">
                     {(parseFloat(amount) || 0).toFixed(2)}
                   </Text>
@@ -365,15 +455,19 @@ export default function ReusableTransactionForm({
           <View>
             {/* Total Amount Row */}
             <View className="flex-row items-center justify-between h-8">
-              <Text className="text-base font-bold text-slate-800">Total Amount</Text>
+              <Text className="text-base font-bold text-slate-800">
+                Total Amount
+              </Text>
               <TouchableOpacity
                 onPress={() => amountInputRef.current?.focus()}
                 activeOpacity={1}
                 className={`flex-row items-center h-8 w-[150px] justify-end border-b border-dashed ${
-                  isAmountFocused ? 'border-primary' : 'border-slate-400'
+                  isAmountFocused ? "border-primary" : "border-slate-400"
                 }`}
               >
-                <Text className="text-base font-bold text-slate-800 mr-2">Rs</Text>
+                <Text className="text-base font-bold text-slate-800 mr-2">
+                  Rs
+                </Text>
                 <TextInput
                   ref={amountInputRef}
                   value={amount}
@@ -387,7 +481,11 @@ export default function ReusableTransactionForm({
                 />
               </TouchableOpacity>
             </View>
-            {amountError && <Text className="text-xs text-red-500 font-medium text-right mt-1">{amountError}</Text>}
+            {amountError && (
+              <Text className="text-xs text-red-500 font-medium text-right mt-1">
+                {amountError}
+              </Text>
+            )}
 
             {/* Revealed breakdown for Credit Sales/Purchases when Total Amount is entered */}
             {isItemizedType && !isCash && hasAmountEntered && (
@@ -402,31 +500,41 @@ export default function ReusableTransactionForm({
                     >
                       <View
                         className={`w-5 h-5 rounded border-2 items-center justify-center ${
-                          isReceivedChecked ? 'bg-primary border-primary' : 'bg-surface border-slate-400'
+                          isReceivedChecked
+                            ? "bg-primary border-primary"
+                            : "bg-surface border-slate-400"
                         }`}
                       >
-                        {isReceivedChecked && <Ionicons name="checkmark" size={14} color="white" />}
+                        {isReceivedChecked && (
+                          <Ionicons name="checkmark" size={14} color="white" />
+                        )}
                       </View>
-                      <Text className="text-base font-bold text-slate-800 ml-2.5">{receivedLabel}</Text>
+                      <Text className="text-base font-bold text-slate-800 ml-2.5">
+                        {receivedLabel}
+                      </Text>
                     </TouchableOpacity>
                   ) : (
-                    <Text className="text-base font-bold text-slate-800">{receivedLabel}</Text>
+                    <Text className="text-base font-bold text-slate-800">
+                      {receivedLabel}
+                    </Text>
                   )}
 
                   <TouchableOpacity
                     onPress={() => receivedInputRef.current?.focus()}
                     activeOpacity={1}
                     className={`flex-row items-center h-8 w-[150px] justify-end border-b border-dashed ${
-                      isReceivedFocused ? 'border-primary' : 'border-slate-400'
+                      isReceivedFocused ? "border-primary" : "border-slate-400"
                     }`}
                   >
-                    <Text className="text-base font-bold text-slate-800 mr-2">Rs</Text>
+                    <Text className="text-base font-bold text-slate-800 mr-2">
+                      Rs
+                    </Text>
                     <TextInput
                       ref={receivedInputRef}
                       value={receivedAmount}
                       onChangeText={(val) => {
                         setReceivedAmount(val);
-                        if (val.trim() === '') {
+                        if (val.trim() === "") {
                           setIsReceivedChecked(false);
                         } else {
                           setIsReceivedChecked(true);
@@ -444,9 +552,13 @@ export default function ReusableTransactionForm({
 
                 {/* Balance Due Row (Bold Label, Aligned Rs) */}
                 <View className="flex-row items-center justify-between h-8">
-                  <Text className="text-base font-bold text-emerald-600">Balance Due</Text>
+                  <Text className="text-base font-bold text-emerald-600">
+                    Balance Due
+                  </Text>
                   <View className="flex-row items-center h-8 w-[150px] justify-end">
-                    <Text className="text-base font-bold text-emerald-600 mr-2">Rs</Text>
+                    <Text className="text-base font-bold text-emerald-600 mr-2">
+                      Rs
+                    </Text>
                     <Text className="text-lg font-bold text-emerald-600 text-right flex-1">
                       {balanceDue.toFixed(2)}
                     </Text>
@@ -463,14 +575,18 @@ export default function ReusableTransactionForm({
         <View className="bg-surface p-4 mt-3 mb-6">
           {/* Payment Type Section */}
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-xs text-slate-500 font-semibold">Payment Type</Text>
+            <Text className="text-xs text-slate-500 font-semibold">
+              Payment Type
+            </Text>
             <TouchableOpacity
               onPress={() => setIsPaymentTypeModalOpen(true)}
               activeOpacity={0.7}
               className="flex-row items-center bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200"
             >
               {renderPaymentPillIcon(paymentMethod)}
-              <Text className="text-sm font-semibold text-slate-700 mr-1.5">{paymentMethod}</Text>
+              <Text className="text-sm font-semibold text-slate-700 mr-1.5">
+                {paymentMethod}
+              </Text>
               <Ionicons name="chevron-down" size={14} color="#64748B" />
             </TouchableOpacity>
           </View>
@@ -480,18 +596,22 @@ export default function ReusableTransactionForm({
             activeOpacity={0.7}
             className="pt-1 mb-5"
           >
-            <Text className="text-primary font-semibold text-sm">+ Add Payment Type</Text>
+            <Text className="text-primary font-semibold text-sm">
+              + Add Payment Type
+            </Text>
           </TouchableOpacity>
 
           {/* Description / Note Input */}
           <View
             className={`border rounded-lg p-3 bg-surface relative ${
-              isNoteFocused ? 'border-2 border-primary' : 'border-slate-300'
+              isNoteFocused ? "border-2 border-primary" : "border-slate-300"
             }`}
           >
             {/* Floating Label */}
             <View className="absolute -top-3 left-3 bg-surface px-1.5 z-10 flex-row items-center">
-              <Text className={`text-xs font-semibold ${isNoteFocused ? 'text-primary' : 'text-slate-500'}`}>
+              <Text
+                className={`text-xs font-semibold ${isNoteFocused ? "text-primary" : "text-slate-500"}`}
+              >
                 Description
               </Text>
             </View>

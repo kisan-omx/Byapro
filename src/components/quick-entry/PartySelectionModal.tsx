@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
 import {
   View,
   Text,
@@ -9,19 +15,19 @@ import {
   ActivityIndicator,
   TouchableWithoutFeedback,
   Keyboard,
-} from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import * as Contacts from 'expo-contacts/legacy';
-import { supabase } from '../../lib/supabase';
-import { useParties } from '../../hooks/useParties';
+} from "react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Contacts from "expo-contacts/legacy";
+import { supabase } from "../../lib/supabase";
+import { useParties } from "../../hooks/useParties";
 
 export type Party = {
   id: string;
   name: string;
   subtitle?: string;
-  type: 'Cash' | 'Contact' | 'Party' | 'ExpenseCategory';
+  type: "Cash" | "Contact" | "Party" | "ExpenseCategory";
   balance?: number;
-  balanceType?: 'To Receive' | 'To Give' | 'Settled';
+  balanceType?: "To Receive" | "To Give" | "Settled";
 };
 
 interface PartySelectionModalProps {
@@ -30,17 +36,18 @@ interface PartySelectionModalProps {
   onSelect: (party: Party | null) => void;
   entryType: string;
   selectedParty?: Party | null;
+  onNavigateToAddParty?: () => void;
 }
 
 const EXPENSE_CATEGORIES: Party[] = [
-  { id: 'exp_1', name: 'Rent', type: 'ExpenseCategory' },
-  { id: 'exp_2', name: 'Salaries', type: 'ExpenseCategory' },
-  { id: 'exp_3', name: 'Bank Fees', type: 'ExpenseCategory' },
-  { id: 'exp_4', name: 'Marketing', type: 'ExpenseCategory' },
-  { id: 'exp_5', name: 'Utilities', type: 'ExpenseCategory' },
-  { id: 'exp_6', name: 'Repair & Maintenance', type: 'ExpenseCategory' },
-  { id: 'exp_7', name: 'Travel & Transportation', type: 'ExpenseCategory' },
-  { id: 'exp_8', name: 'Miscellaneous', type: 'ExpenseCategory' },
+  { id: "exp_1", name: "Rent", type: "ExpenseCategory" },
+  { id: "exp_2", name: "Salaries", type: "ExpenseCategory" },
+  { id: "exp_3", name: "Bank Fees", type: "ExpenseCategory" },
+  { id: "exp_4", name: "Marketing", type: "ExpenseCategory" },
+  { id: "exp_5", name: "Utilities", type: "ExpenseCategory" },
+  { id: "exp_6", name: "Repair & Maintenance", type: "ExpenseCategory" },
+  { id: "exp_7", name: "Travel & Transportation", type: "ExpenseCategory" },
+  { id: "exp_8", name: "Miscellaneous", type: "ExpenseCategory" },
 ];
 
 let cachedCategories: Party[] | null = null;
@@ -49,16 +56,18 @@ export async function preloadExpenseCategories() {
   if (cachedCategories) return;
   try {
     const { data } = await supabase
-      .from('expense_categories')
-      .select('id, name')
-      .order('name');
+      .from("expense_categories")
+      .select("id, name")
+      .order("name");
     if (data && data.length > 0) {
       const formattedCats: Party[] = data.map((c) => ({
         id: c.id,
         name: c.name,
-        type: 'ExpenseCategory' as const,
+        type: "ExpenseCategory" as const,
       }));
-      const existingNames = new Set(formattedCats.map((c) => c.name.toLowerCase()));
+      const existingNames = new Set(
+        formattedCats.map((c) => c.name.toLowerCase()),
+      );
       const defaults = EXPENSE_CATEGORIES.filter(
         (c) => !existingNames.has(c.name.toLowerCase()),
       );
@@ -81,7 +90,7 @@ export async function preloadContacts() {
   isPreloadingContacts = true;
   try {
     const { status } = await Contacts.getPermissionsAsync();
-    if (status === 'granted') {
+    if (status === "granted") {
       const { data } = await Contacts.getContactsAsync({
         fields: [Contacts.Fields.Name, Contacts.Fields.PhoneNumbers],
         sort: Contacts.SortTypes.FirstName,
@@ -92,8 +101,8 @@ export async function preloadContacts() {
           .map((c: any) => ({
             id: c.id || Math.random().toString(),
             name: c.name,
-            subtitle: c.phoneNumbers?.[0]?.number || 'No phone number',
-            type: 'Contact',
+            subtitle: c.phoneNumbers?.[0]?.number || "No phone number",
+            type: "Contact",
           }));
       }
     }
@@ -160,7 +169,9 @@ const CategoryItemRow = React.memo(
       >
         <Text
           className={`text-base ${
-            isSelected ? 'font-semibold text-text' : 'font-medium text-text-secondary'
+            isSelected
+              ? "font-semibold text-text"
+              : "font-medium text-text-secondary"
           }`}
         >
           {item.name}
@@ -175,24 +186,38 @@ const CategoryItemRow = React.memo(
   },
 );
 
-export default function PartySelectionModal({ visible, onClose, onSelect, entryType, selectedParty }: PartySelectionModalProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+export default function PartySelectionModal({
+  visible,
+  onClose,
+  onSelect,
+  entryType,
+  selectedParty,
+  onNavigateToAddParty,
+}: PartySelectionModalProps) {
+  const [searchQuery, setSearchQuery] = useState("");
   const [contacts, setContacts] = useState<Party[]>(() => cachedContacts || []);
-  const [dbCategories, setDbCategories] = useState<Party[]>(() => cachedCategories || EXPENSE_CATEGORIES);
+  const [dbCategories, setDbCategories] = useState<Party[]>(
+    () => cachedCategories || EXPENSE_CATEGORIES,
+  );
   const [permissionDenied, setPermissionDenied] = useState(false);
 
-  const isExpense = entryType === 'Expense';
+  const isExpense = entryType === "Expense";
   const searchInputRef = useRef<TextInput>(null);
 
   const handleAddNew = () => {
     const name = searchQuery.trim();
     if (name) {
+      // If user typed a name, create inline as before
       onSelect({
-        id: 'custom_' + Date.now(),
+        id: "custom_" + Date.now(),
         name,
-        type: isExpense ? 'ExpenseCategory' : 'Party',
+        type: isExpense ? "ExpenseCategory" : "Party",
       });
       handleClose();
+    } else if (!isExpense && onNavigateToAddParty) {
+      // No search query + not expense → go to full Add Party screen
+      handleClose();
+      onNavigateToAddParty();
     } else {
       searchInputRef.current?.focus();
     }
@@ -214,16 +239,18 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
   const loadDbCategories = async () => {
     try {
       const { data } = await supabase
-        .from('expense_categories')
-        .select('id, name')
-        .order('name');
+        .from("expense_categories")
+        .select("id, name")
+        .order("name");
       if (data && data.length > 0) {
         const formattedCats: Party[] = data.map((c) => ({
           id: c.id,
           name: c.name,
-          type: 'ExpenseCategory',
+          type: "ExpenseCategory",
         }));
-        const existingNames = new Set(formattedCats.map((c) => c.name.toLowerCase()));
+        const existingNames = new Set(
+          formattedCats.map((c) => c.name.toLowerCase()),
+        );
         const defaults = EXPENSE_CATEGORIES.filter(
           (c) => !existingNames.has(c.name.toLowerCase()),
         );
@@ -232,7 +259,7 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
         setDbCategories(combined);
       }
     } catch (error) {
-      console.warn('Error fetching DB categories', error);
+      console.warn("Error fetching DB categories", error);
     }
   };
 
@@ -243,7 +270,7 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
     try {
       const { status } = await Contacts.requestPermissionsAsync();
       hasPermissionChecked = true;
-      if (status === 'granted') {
+      if (status === "granted") {
         const { data } = await Contacts.getContactsAsync({
           fields: [Contacts.Fields.Name, Contacts.Fields.PhoneNumbers],
           sort: Contacts.SortTypes.FirstName,
@@ -255,8 +282,8 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
             .map((c: any) => ({
               id: c.id || Math.random().toString(),
               name: c.name,
-              subtitle: c.phoneNumbers?.[0]?.number || 'No phone number',
-              type: 'Contact',
+              subtitle: c.phoneNumbers?.[0]?.number || "No phone number",
+              type: "Contact",
             }));
           cachedContacts = formattedContacts;
           setContacts(formattedContacts);
@@ -265,14 +292,18 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
         setPermissionDenied(true);
       }
     } catch (error) {
-      console.warn('Error fetching contacts', error);
+      console.warn("Error fetching contacts", error);
     }
   };
 
   useEffect(() => {
     if (visible) {
       // Immediately pick up any preloaded contacts or categories if available
-      if (cachedContacts && cachedContacts.length > 0 && contacts.length === 0) {
+      if (
+        cachedContacts &&
+        cachedContacts.length > 0 &&
+        contacts.length === 0
+      ) {
         setContacts(cachedContacts);
       }
       if (cachedCategories && cachedCategories.length > 0) {
@@ -296,7 +327,7 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
   }, [visible, isExpense]);
 
   const handleClose = () => {
-    setSearchQuery('');
+    setSearchQuery("");
     onClose();
   };
 
@@ -387,7 +418,9 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
             <View className="p-4 border-b border-border">
               <View className="flex-row justify-between items-center mb-4">
                 <Text className="text-lg font-semibold text-text">
-                  {isExpense ? 'Select Category for Expense' : 'Select Party for Quick Entry'}
+                  {isExpense
+                    ? "Select Category for Expense"
+                    : "Select Party for Quick Entry"}
                 </Text>
                 <TouchableOpacity onPress={handleClose} className="p-1">
                   <Ionicons name="close" size={24} color="#94A3B8" />
@@ -399,7 +432,9 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
                 <TextInput
                   ref={searchInputRef}
                   className="flex-1 ml-2 text-base text-text"
-                  placeholder={isExpense ? 'Search Category...' : 'Enter party name...'}
+                  placeholder={
+                    isExpense ? "Search Category..." : "Enter party name..."
+                  }
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                   placeholderTextColor="#94A3B8"
@@ -408,7 +443,10 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
                   autoFocus={true}
                 />
                 {searchQuery.length > 0 && (
-                  <TouchableOpacity onPress={() => setSearchQuery('')} className="p-1">
+                  <TouchableOpacity
+                    onPress={() => setSearchQuery("")}
+                    className="p-1"
+                  >
                     <Ionicons name="close" size={20} color="#94A3B8" />
                   </TouchableOpacity>
                 )}
@@ -428,19 +466,28 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
               refreshing={!isExpense ? refreshing : false}
               onRefresh={!isExpense ? refresh : undefined}
               ListHeaderComponent={
-                !searchQuery && (entryType === 'Sale' || entryType === 'Purchase') ? (
+                !searchQuery &&
+                (entryType === "Sale" || entryType === "Purchase") ? (
                   <TouchableOpacity
                     className="flex-row items-center p-4 border-b border-border"
                     onPress={handleSelectCash}
                   >
                     <View className="w-10 h-10 rounded-full bg-primary items-center justify-center mr-4">
-                      <MaterialCommunityIcons name="cash" size={24} color="white" />
+                      <MaterialCommunityIcons
+                        name="cash"
+                        size={24}
+                        color="white"
+                      />
                     </View>
                     <View className="flex-1">
                       <Text className="text-base font-medium text-text">
-                        {entryType === 'Purchase' ? 'Cash Purchase' : 'Cash Sale'}
+                        {entryType === "Purchase"
+                          ? "Cash Purchase"
+                          : "Cash Sale"}
                       </Text>
-                      <Text className="text-sm text-text-secondary">Default</Text>
+                      <Text className="text-sm text-text-secondary">
+                        Default
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 ) : null
@@ -454,7 +501,7 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
                 ) : null
               }
               ListEmptyComponent={
-                (!isExpense && dbLoading) ? (
+                !isExpense && dbLoading ? (
                   <View className="p-8 items-center">
                     <ActivityIndicator size="large" color="#0EA5E9" />
                   </View>
@@ -464,29 +511,39 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
                     onPress={() => {
                       if (!searchQuery.trim()) return;
                       onSelect({
-                        id: 'custom_' + Date.now(),
+                        id: "custom_" + Date.now(),
                         name: searchQuery.trim(),
-                        type: isExpense ? 'ExpenseCategory' : 'Party',
+                        type: isExpense ? "ExpenseCategory" : "Party",
                       });
                       handleClose();
                     }}
                   >
                     <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center mr-4">
-                      <Ionicons name={isExpense ? "add" : "person-add"} size={20} color="#0EA5E9" />
+                      <Ionicons
+                        name={isExpense ? "add" : "person-add"}
+                        size={20}
+                        color="#0EA5E9"
+                      />
                     </View>
                     <View className="flex-1">
                       <Text className="text-base font-medium text-text">
-                        Add &quot;{searchQuery}&quot; to {isExpense ? 'categories' : 'parties'}
+                        Add &quot;{searchQuery}&quot; to{" "}
+                        {isExpense ? "categories" : "parties"}
                       </Text>
                     </View>
                   </TouchableOpacity>
                 ) : permissionDenied && !isExpense ? (
                   <View className="p-8 items-center">
-                    <Text className="text-text-secondary text-center">Contacts permission denied. Allow access in settings to view contacts.</Text>
+                    <Text className="text-text-secondary text-center">
+                      Contacts permission denied. Allow access in settings to
+                      view contacts.
+                    </Text>
                   </View>
                 ) : (
                   <View className="p-8 items-center">
-                    <Text className="text-text-secondary">No {isExpense ? 'categories' : 'parties'} found</Text>
+                    <Text className="text-text-secondary">
+                      No {isExpense ? "categories" : "parties"} found
+                    </Text>
                   </View>
                 )
               }
@@ -501,7 +558,9 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
                 >
                   <Ionicons name="add" size={20} color="#64748B" />
                   <Text className="text-text-secondary text-base font-medium ml-2">
-                    {searchQuery.trim() ? `Add "${searchQuery.trim()}"` : 'Add New Category'}
+                    {searchQuery.trim()
+                      ? `Add "${searchQuery.trim()}"`
+                      : "Add New Category"}
                   </Text>
                 </TouchableOpacity>
               ) : (
@@ -512,7 +571,9 @@ export default function PartySelectionModal({ visible, onClose, onSelect, entryT
                 >
                   <Ionicons name="person-add" size={20} color="white" />
                   <Text className="text-white text-base font-semibold ml-2">
-                    {searchQuery.trim() ? `Add "${searchQuery.trim()}"` : 'Add New Party'}
+                    {searchQuery.trim()
+                      ? `Add "${searchQuery.trim()}"`
+                      : "Add New Party"}
                   </Text>
                 </TouchableOpacity>
               )}

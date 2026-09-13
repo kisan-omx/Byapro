@@ -51,8 +51,10 @@ export default function SetupBusinessScreen() {
 
   const [businessName, setBusinessName] = useState("");
   const [category, setCategory] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState<CountryOption>(COUNTRIES[0]); // Default Nepal
-  
+  const [selectedCountry, setSelectedCountry] = useState<CountryOption>(
+    COUNTRIES[0],
+  ); // Default Nepal
+
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -68,7 +70,7 @@ export default function SetupBusinessScreen() {
 
     const backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
-      backAction
+      backAction,
     );
 
     return () => backHandler.remove();
@@ -148,7 +150,10 @@ export default function SetupBusinessScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50 md:bg-slate-100">
-      <StatusBar barStyle="dark-content" backgroundColor={isLargeScreen ? "#F1F5F9" : "#FFFFFF"} />
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={isLargeScreen ? "#F1F5F9" : "#FFFFFF"}
+      />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -239,7 +244,9 @@ export default function SetupBusinessScreen() {
                   className="w-full border border-slate-200 rounded-2xl px-5 py-4 flex-row justify-between items-center bg-white"
                 >
                   <View className="flex-row items-center">
-                    <Text className="text-slate-400 text-base mr-3">Country</Text>
+                    <Text className="text-slate-400 text-base mr-3">
+                      Country
+                    </Text>
                     <Text className="text-slate-900 text-base font-semibold">
                       {selectedCountry.name}
                     </Text>
@@ -247,7 +254,8 @@ export default function SetupBusinessScreen() {
                   <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
                 </TouchableOpacity>
                 <Text className="text-xs text-slate-400 mt-2 ml-1 leading-relaxed">
-                  This automatically sets your default currency ({selectedCountry.currency}).
+                  This automatically sets your default currency (
+                  {selectedCountry.currency}).
                 </Text>
               </View>
 
@@ -273,7 +281,10 @@ export default function SetupBusinessScreen() {
                   }
                 >
                   {loading ? (
-                    <ActivityIndicator color={!businessName.trim() ? "#94A3B8" : "#FFFFFF"} size="small" />
+                    <ActivityIndicator
+                      color={!businessName.trim() ? "#94A3B8" : "#FFFFFF"}
+                      size="small"
+                    />
                   ) : (
                     <Text
                       className={`text-base font-bold tracking-wide ${
@@ -297,14 +308,14 @@ export default function SetupBusinessScreen() {
         animationType="slide"
         onRequestClose={() => setCategoryModalVisible(false)}
       >
-        <View 
-          className={`flex-1 ${isLargeScreen ? "justify-center items-center p-6" : "justify-end"}`} 
+        <View
+          className={`flex-1 ${isLargeScreen ? "justify-center items-center p-6" : "justify-end"}`}
           style={{ backgroundColor: "rgba(0, 0, 0, 0.4)" }}
         >
-          <View 
+          <View
             className={`bg-white p-6 pb-10 w-full ${
-              isLargeScreen 
-                ? "rounded-[24px] max-w-[440px] max-h-[80%]" 
+              isLargeScreen
+                ? "rounded-[24px] max-w-[440px] max-h-[80%]"
                 : "rounded-t-[32px] max-h-[80%]"
             }`}
           >
@@ -325,7 +336,8 @@ export default function SetupBusinessScreen() {
               keyExtractor={(item) => item}
               showsVerticalScrollIndicator={false}
               renderItem={({ item }) => {
-                const isSelected = item === "None (Skip)" ? !category : category === item;
+                const isSelected =
+                  item === "None (Skip)" ? !category : category === item;
                 return (
                   <TouchableOpacity
                     activeOpacity={0.7}
@@ -335,20 +347,28 @@ export default function SetupBusinessScreen() {
                     }}
                     className="py-4 px-4 rounded-xl flex-row justify-between items-center mb-2"
                     style={{
-                      backgroundColor: isSelected ? "rgba(219, 234, 254, 0.5)" : "#F8FAFC",
+                      backgroundColor: isSelected
+                        ? "rgba(219, 234, 254, 0.5)"
+                        : "#F8FAFC",
                       borderColor: isSelected ? "#DBEAFE" : "transparent",
                       borderWidth: 1,
                     }}
                   >
                     <Text
                       className={`text-base ${
-                        isSelected ? "text-primary font-semibold" : "text-slate-700"
+                        isSelected
+                          ? "text-primary font-semibold"
+                          : "text-slate-700"
                       }`}
                     >
                       {item}
                     </Text>
                     {isSelected ? (
-                      <Ionicons name="checkmark-circle" size={22} color="#2563EB" />
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={22}
+                        color="#2563EB"
+                      />
                     ) : null}
                   </TouchableOpacity>
                 );
@@ -365,14 +385,14 @@ export default function SetupBusinessScreen() {
         animationType="slide"
         onRequestClose={() => setCountryModalVisible(false)}
       >
-        <View 
-          className={`flex-1 ${isLargeScreen ? "justify-center items-center p-6" : "justify-end"}`} 
+        <View
+          className={`flex-1 ${isLargeScreen ? "justify-center items-center p-6" : "justify-end"}`}
           style={{ backgroundColor: "rgba(0, 0, 0, 0.4)" }}
         >
-          <View 
+          <View
             className={`bg-white p-6 pb-10 w-full ${
-              isLargeScreen 
-                ? "rounded-[24px] max-w-[440px] max-h-[80%]" 
+              isLargeScreen
+                ? "rounded-[24px] max-w-[440px] max-h-[80%]"
                 : "rounded-t-[32px] max-h-[80%]"
             }`}
           >
@@ -401,8 +421,14 @@ export default function SetupBusinessScreen() {
                   }}
                   className="py-4 px-4 rounded-xl flex-row justify-between items-center mb-2"
                   style={{
-                    backgroundColor: selectedCountry.name === item.name ? "rgba(219, 234, 254, 0.5)" : "#F8FAFC",
-                    borderColor: selectedCountry.name === item.name ? "#DBEAFE" : "transparent",
+                    backgroundColor:
+                      selectedCountry.name === item.name
+                        ? "rgba(219, 234, 254, 0.5)"
+                        : "#F8FAFC",
+                    borderColor:
+                      selectedCountry.name === item.name
+                        ? "#DBEAFE"
+                        : "transparent",
                     borderWidth: 1,
                   }}
                 >
@@ -415,7 +441,11 @@ export default function SetupBusinessScreen() {
                     </Text>
                   </View>
                   {selectedCountry.name === item.name ? (
-                    <Ionicons name="checkmark-circle" size={22} color="#2563EB" />
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={22}
+                      color="#2563EB"
+                    />
                   ) : null}
                 </TouchableOpacity>
               )}
@@ -431,8 +461,8 @@ export default function SetupBusinessScreen() {
         animationType="fade"
         onRequestClose={() => setCancelModalVisible(false)}
       >
-        <View 
-          className="flex-1 justify-center items-center px-8" 
+        <View
+          className="flex-1 justify-center items-center px-8"
           style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
         >
           <View className="bg-slate-800 rounded-3xl p-6 w-full max-w-[320px] shadow-2xl">
@@ -440,7 +470,8 @@ export default function SetupBusinessScreen() {
               Cancel Setup?
             </Text>
             <Text className="text-base text-slate-300 mb-6 leading-relaxed">
-              If you go back now, your login will be canceled. Are you sure you want to exit?
+              If you go back now, your login will be canceled. Are you sure you
+              want to exit?
             </Text>
             <View className="flex-row justify-end">
               <TouchableOpacity

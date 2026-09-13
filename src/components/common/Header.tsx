@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import React from "react";
+import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 
 export interface HeaderProps {
   title?: string;
@@ -14,14 +14,14 @@ export interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  title = 'Transactions',
+  title = "Transactions",
   onOpenSettings,
   searchQuery,
   onSearchChange,
   onOpenTypeFilter,
   onOpenFilter,
-  searchPlaceholder = 'Search transactions...',
-  settingsIconColor = '#475569',
+  searchPlaceholder = "Search transactions...",
+  settingsIconColor = "#475569",
 }) => {
   const handleFilterPress = onOpenFilter || onOpenTypeFilter || onOpenSettings;
 
@@ -49,13 +49,20 @@ export const Header: React.FC<HeaderProps> = ({
           autoCorrect={false}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => onSearchChange('')} className="p-1 mr-1">
+          <TouchableOpacity
+            onPress={() => onSearchChange("")}
+            className="p-1 mr-1"
+          >
             <Feather name="x-circle" size={16} color="#94A3B8" />
           </TouchableOpacity>
         )}
         <View className="w-px h-5 bg-border mx-2" />
         <TouchableOpacity onPress={handleFilterPress} className="p-1">
-          <MaterialCommunityIcons name="filter-variant" size={22} color="#475569" />
+          <MaterialCommunityIcons
+            name="filter-variant"
+            size={22}
+            color="#475569"
+          />
         </TouchableOpacity>
       </View>
     </View>

@@ -1,13 +1,13 @@
-import React from 'react';
-import { View, Text, TextInput } from 'react-native';
-import { ADD_ITEM_CONSTANTS } from '../../constants/items';
+import React from "react";
+import { View, Text, TextInput } from "react-native";
+import { ADD_ITEM_CONSTANTS } from "../../constants/items";
 
 interface StockFieldProps {
   label: string;
   value: string;
   onChangeText: (v: string) => void;
   placeholder?: string;
-  returnKeyType?: 'next' | 'done';
+  returnKeyType?: "next" | "done";
   onSubmitEditing?: () => void;
   inputRef?: React.RefObject<TextInput | null>;
 }
@@ -16,8 +16,8 @@ const StockField: React.FC<StockFieldProps> = ({
   label,
   value,
   onChangeText,
-  placeholder = '0',
-  returnKeyType = 'next',
+  placeholder = "0",
+  returnKeyType = "next",
   onSubmitEditing,
   inputRef,
 }) => (

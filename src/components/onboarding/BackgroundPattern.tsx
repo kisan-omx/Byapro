@@ -4,7 +4,11 @@ import { Ionicons, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 
 export function BackgroundPattern() {
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none" className="overflow-hidden">
+    <View
+      style={StyleSheet.absoluteFill}
+      pointerEvents="none"
+      className="overflow-hidden"
+    >
       {/* Grid Pattern Overlay - Ultra Subtle */}
       <View className="absolute inset-0 flex-row flex-wrap justify-between opacity-[0.03]">
         {Array.from({ length: 60 }).map((_, i) => (
@@ -20,7 +24,11 @@ export function BackgroundPattern() {
         <View className="flex-row justify-between items-center px-4">
           <Ionicons name="stats-chart-outline" size={28} color="#2563EB" />
           <Feather name="pie-chart" size={24} color="#16A34A" />
-          <MaterialCommunityIcons name="receipt-outline" size={30} color="#2563EB" />
+          <MaterialCommunityIcons
+            name="receipt-outline"
+            size={30}
+            color="#2563EB"
+          />
         </View>
 
         <View className="flex-row justify-around items-center">
@@ -30,7 +38,11 @@ export function BackgroundPattern() {
         </View>
 
         <View className="flex-row justify-between items-center px-6">
-          <MaterialCommunityIcons name="file-document-outline" size={28} color="#2563EB" />
+          <MaterialCommunityIcons
+            name="file-document-outline"
+            size={28}
+            color="#2563EB"
+          />
           <Ionicons name="barcode-outline" size={32} color="#475569" />
           <Feather name="dollar-sign" size={28} color="#16A34A" />
         </View>

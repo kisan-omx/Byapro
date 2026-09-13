@@ -1,8 +1,11 @@
-import { Party } from '../types/party';
+import { Party } from "../types/party";
 
 type PartyCreatedListener = (party: Party) => void;
 type PartySavedListener = (data: { tempId: string; realParty?: Party }) => void;
-type PartyFailedListener = (data: { tempId: string; errorMsg?: string }) => void;
+type PartyFailedListener = (data: {
+  tempId: string;
+  errorMsg?: string;
+}) => void;
 type PartyRetryListener = (party: Party) => void;
 
 const createdListeners = new Set<PartyCreatedListener>();
@@ -41,7 +44,7 @@ export const partyEvents = {
       try {
         listener(party);
       } catch (err) {
-        console.error('Error in party onCreated listener:', err);
+        console.error("Error in party onCreated listener:", err);
       }
     });
   },
@@ -52,7 +55,7 @@ export const partyEvents = {
       try {
         listener({ tempId, realParty });
       } catch (err) {
-        console.error('Error in party onSaved listener:', err);
+        console.error("Error in party onSaved listener:", err);
       }
     });
   },
@@ -63,7 +66,7 @@ export const partyEvents = {
       try {
         listener({ tempId, errorMsg });
       } catch (err) {
-        console.error('Error in party onFailed listener:', err);
+        console.error("Error in party onFailed listener:", err);
       }
     });
   },
@@ -74,7 +77,7 @@ export const partyEvents = {
       try {
         listener(party);
       } catch (err) {
-        console.error('Error in party onRetry listener:', err);
+        console.error("Error in party onRetry listener:", err);
       }
     });
   },
