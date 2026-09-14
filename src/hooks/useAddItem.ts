@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { auth } from "../lib/firebase";
 import { getBusinessId } from "../services/quickEntryService";
-import { createItem } from "../services/itemService";
+import { createItem, checkItemExistsByName } from "../services/itemService";
 import { itemEvents } from "../services/itemEvents";
 import { uploadItemImageAsync, checkImageSizeAsync } from "../services/storageService";
 import { generateUUID } from "../utils/uuid";
@@ -135,107 +135,122 @@ export function useAddItem() {
     setSaving(true);
     setErrorMsg(null);
 
-    const tempId = generateUUID();
-    const qty = form.stockQuantity.trim() ? parseFloat(form.stockQuantity) : 0;
-    const lowAlert = form.lowStockAlert.trim()
-      ? parseFloat(form.lowStockAlert)
-      : null;
-    const convRate = form.conversionRate.trim()
-      ? parseFloat(form.conversionRate)
-      : null;
+    try {
+      // ── Resolve business context first (needed for duplicate check) ──
+      const user = auth.currentUser;
+      if (!user) throw new Error("Not authenticated");
+      const businessId = await getBusinessId(user.uid);
+      if (!businessId) throw new Error("No business found");
 
-    let stockStatus: Item["stockStatus"] = "in_stock";
-    if (qty <= 0) stockStatus = "out_of_stock";
-    else if (lowAlert != null && qty <= lowAlert) stockStatus = "low_stock";
-
-    const sp = form.sellingPrice.trim() ? parseFloat(form.sellingPrice) : 0;
-
-    const optimisticItem: Item = {
-      id: tempId,
-      businessId: "",
-      name: form.name.trim(),
-      sku: form.sku.trim() || null,
-      sellingPrice: sp,
-      purchasePrice: form.purchasePrice.trim()
-        ? parseFloat(form.purchasePrice)
-        : null,
-      stockQuantity: qty,
-      asOfDate: form.asOfDate || null,
-      atPrice: form.atPrice.trim() ? parseFloat(form.atPrice) : null,
-      lowStockAlert: lowAlert,
-      itemLocation: form.itemLocation.trim() || null,
-      unit: form.unit.trim().toUpperCase() || null,
-      secondaryUnit: form.secondaryUnit.trim().toUpperCase() || null,
-      conversionRate: convRate,
-      categoryId: form.categoryId || null,
-      itemType: form.itemType,
-      imagePath: null,
-      imageUrl: form.imageUri || null, // local URI for instant optimistic preview
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      stockStatus,
-      avatarLetter: (form.name.trim()[0] ?? "?").toUpperCase(),
-      syncStatus: "saving",
-    };
-
-    itemEvents.emitCreated(optimisticItem);
-
-    // Persist in background — non-blocking
-    (async () => {
-      try {
-        const user = auth.currentUser;
-        if (!user) throw new Error("Not authenticated");
-        const businessId = await getBusinessId(user.uid);
-        if (!businessId) throw new Error("No business found");
-
-        // Upload: validate → compress → upload as Blob → return storage path
-        let uploadedImagePath: string | undefined = undefined;
-        if (form.imageUri) {
-          try {
-            uploadedImagePath = await uploadItemImageAsync(
-              form.imageUri,
-              businessId,
-              tempId,
-            );
-          } catch (uploadErr) {
-            console.error("Image upload failed", uploadErr);
-          }
-        }
-
-        const saved = await createItem({
-          id: tempId,
-          businessId,
-          name: form.name.trim(),
-          sellingPrice: sp,
-          purchasePrice: form.purchasePrice.trim()
-            ? parseFloat(form.purchasePrice)
-            : undefined,
-          unit: form.unit.trim() || undefined,
-          secondaryUnit: form.secondaryUnit.trim() || undefined,
-          conversionRate: convRate ?? undefined,
-          categoryId: form.categoryId || undefined,
-          stockQuantity: form.stockQuantity.trim()
-            ? parseFloat(form.stockQuantity)
-            : undefined,
-          asOfDate: form.asOfDate || undefined,
-          atPrice: form.atPrice.trim() ? parseFloat(form.atPrice) : undefined,
-          lowStockAlert: form.lowStockAlert.trim()
-            ? parseFloat(form.lowStockAlert)
-            : undefined,
-          itemLocation: form.itemLocation.trim() || undefined,
-          sku: form.sku.trim() || undefined,
-          itemType: form.itemType,
-          imagePath: uploadedImagePath,
-        });
-
-        itemEvents.emitSaved(tempId, saved);
-      } catch (err: any) {
-        itemEvents.emitFailed(tempId, err?.message || "Failed to save item");
+      // ── Duplicate name check (case-insensitive) ──────────────────────
+      const exists = await checkItemExistsByName(businessId, form.name.trim());
+      if (exists) {
+        setErrorMsg("Item name is already in use. Please choose a different name.");
+        setSaving(false);
+        return false;
       }
-    })();
 
-    setSaving(false);
-    return true;
+      const tempId = generateUUID();
+      const qty = form.stockQuantity.trim() ? parseFloat(form.stockQuantity) : 0;
+      const lowAlert = form.lowStockAlert.trim()
+        ? parseFloat(form.lowStockAlert)
+        : null;
+      const convRate = form.conversionRate.trim()
+        ? parseFloat(form.conversionRate)
+        : null;
+
+      let stockStatus: Item["stockStatus"] = "in_stock";
+      if (qty <= 0) stockStatus = "out_of_stock";
+      else if (lowAlert != null && qty <= lowAlert) stockStatus = "low_stock";
+
+      const sp = form.sellingPrice.trim() ? parseFloat(form.sellingPrice) : 0;
+
+      const optimisticItem: Item = {
+        id: tempId,
+        businessId: "",
+        name: form.name.trim(),
+        sku: form.sku.trim() || null,
+        sellingPrice: sp,
+        purchasePrice: form.purchasePrice.trim()
+          ? parseFloat(form.purchasePrice)
+          : null,
+        stockQuantity: qty,
+        asOfDate: form.asOfDate || null,
+        atPrice: form.atPrice.trim() ? parseFloat(form.atPrice) : null,
+        lowStockAlert: lowAlert,
+        itemLocation: form.itemLocation.trim() || null,
+        unit: form.unit.trim().toUpperCase() || null,
+        secondaryUnit: form.secondaryUnit.trim().toUpperCase() || null,
+        conversionRate: convRate,
+        categoryId: form.categoryId || null,
+        itemType: form.itemType,
+        imagePath: null,
+        imageUrl: form.imageUri || null, // local URI for instant optimistic preview
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        stockStatus,
+        avatarLetter: (form.name.trim()[0] ?? "?").toUpperCase(),
+        syncStatus: "saving",
+      };
+
+      itemEvents.emitCreated(optimisticItem);
+
+      // Persist in background — non-blocking
+      (async () => {
+        try {
+          // Upload: validate → compress → upload as Blob → return storage path
+          let uploadedImagePath: string | undefined = undefined;
+          if (form.imageUri) {
+            try {
+              uploadedImagePath = await uploadItemImageAsync(
+                form.imageUri,
+                businessId,
+                tempId,
+              );
+            } catch (uploadErr) {
+              console.error("Image upload failed", uploadErr);
+            }
+          }
+
+          const saved = await createItem({
+            id: tempId,
+            businessId,
+            name: form.name.trim(),
+            sellingPrice: sp,
+            purchasePrice: form.purchasePrice.trim()
+              ? parseFloat(form.purchasePrice)
+              : undefined,
+            unit: form.unit.trim() || undefined,
+            secondaryUnit: form.secondaryUnit.trim() || undefined,
+            conversionRate: convRate ?? undefined,
+            categoryId: form.categoryId || undefined,
+            stockQuantity: form.stockQuantity.trim()
+              ? parseFloat(form.stockQuantity)
+              : undefined,
+            asOfDate: form.asOfDate || undefined,
+            atPrice: form.atPrice.trim() ? parseFloat(form.atPrice) : undefined,
+            lowStockAlert: form.lowStockAlert.trim()
+              ? parseFloat(form.lowStockAlert)
+              : undefined,
+            itemLocation: form.itemLocation.trim() || undefined,
+            sku: form.sku.trim() || undefined,
+            itemType: form.itemType,
+            imagePath: uploadedImagePath,
+          });
+
+          itemEvents.emitSaved(tempId, saved);
+        } catch (err: any) {
+          itemEvents.emitFailed(tempId, err?.message || "Failed to save item");
+        }
+      })();
+
+      setSaving(false);
+      return true;
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Something went wrong. Please try again.");
+      setSaving(false);
+      return false;
+    }
   }, [form]);
 
   return {

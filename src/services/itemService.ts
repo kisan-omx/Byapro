@@ -231,3 +231,36 @@ export async function createItem(params: CreateItemParams): Promise<Item> {
   if (error) throw error;
   return mapRowToItem(data);
 }
+
+// ─────────────────────────────────────────────────
+// checkItemExistsByName — duplicate name guard
+// ─────────────────────────────────────────────────
+/**
+ * Checks if an item with the given name (case-insensitive) already exists for the business.
+ */
+export async function checkItemExistsByName(
+  businessId: string,
+  name: string,
+): Promise<boolean> {
+  const trimmed = name.trim();
+  if (!trimmed || !businessId) return false;
+
+  try {
+    const { data, error } = await supabase
+      .from("items")
+      .select("id")
+      .eq("business_id", businessId)
+      .ilike("name", trimmed)
+      .limit(1);
+
+    if (error) {
+      console.error("Error checking existing item by name:", error);
+      return false;
+    }
+
+    return Array.isArray(data) && data.length > 0;
+  } catch (err) {
+    console.error("Error checking existing item by name:", err);
+    return false;
+  }
+}
