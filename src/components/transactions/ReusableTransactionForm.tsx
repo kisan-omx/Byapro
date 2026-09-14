@@ -5,16 +5,20 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  Keyboard,
   Alert,
+  Modal,
 } from "react-native";
 import {
   Ionicons,
   MaterialCommunityIcons,
   FontAwesome5,
+  Feather,
 } from "@expo/vector-icons";
 import { Party } from "../quick-entry/PartySelectionModal";
 import { EntryType } from "../quick-entry/QuickEntryTabs";
 import PaymentTypeModal from "./PaymentTypeModal";
+import { AddBillingItemModal, BillingItemValues } from "../items/AddBillingItemModal";
 
 export interface ReusableTransactionFormProps {
   entryType: EntryType;
@@ -33,6 +37,17 @@ export interface ReusableTransactionFormProps {
   showAddItems?: boolean;
   onAddItemsPress?: () => void;
   onBarcodeScanPress?: () => void;
+  
+  billingItems?: any[];
+  onRemoveBillingItem?: (index: number) => void;
+  onUpdateBillingItem?: (index: number, updated: any) => void;
+  transactionDiscount?: string;
+  onTransactionDiscountChange?: (val: string) => void;
+  transactionTax?: string;
+  onTransactionTaxChange?: (val: string) => void;
+  additionalChargesList?: {name: string, amount: string}[];
+  onAdditionalChargesListChange?: (list: {name: string, amount: string}[]) => void;
+
   note?: string;
   onNoteChange?: (note: string) => void;
   partyError?: string | null;
@@ -56,6 +71,15 @@ export default function ReusableTransactionForm({
   showAddItems = true,
   onAddItemsPress,
   onBarcodeScanPress,
+  billingItems = [],
+  onRemoveBillingItem,
+  onUpdateBillingItem,
+  transactionDiscount = "",
+  onTransactionDiscountChange,
+  transactionTax = "",
+  onTransactionTaxChange,
+  additionalChargesList = [],
+  onAdditionalChargesListChange,
   note = "",
   onNoteChange,
   partyError,
@@ -113,11 +137,95 @@ export default function ReusableTransactionForm({
     }
   };
 
+  const partyInputRef = React.useRef<TextInput>(null);
   const amountInputRef = React.useRef<TextInput>(null);
   const receivedInputRef = React.useRef<TextInput>(null);
 
+  const [isDiscountVisible, setIsDiscountVisible] = React.useState(false);
+  const [isTaxVisible, setIsTaxVisible] = React.useState(false);
+  const [isBillingItemsExpanded, setIsBillingItemsExpanded] = React.useState(true);
+
+  // Local state for adjuster UI details (names/percents)
+  const [globalDiscountPercent, setGlobalDiscountPercent] = React.useState("");
+  const [globalTaxName, setGlobalTaxName] = React.useState("VAT 0%");
+  const [globalChargeName, setGlobalChargeName] = React.useState("");
+  const [isTaxDropdownOpen, setIsTaxDropdownOpen] = React.useState(false);
+
+  const hasBillingItems = billingItems && billingItems.length > 0;
+  const billingSubtotal = hasBillingItems
+    ? billingItems.reduce((acc, item) => acc + (item.totalAmount || 0), 0)
+    : 0;
+  const canAddAdjusters = hasBillingItems;
+
+  const formatAdjuster = (num: number) => Number.isInteger(num) ? num.toString() : num.toFixed(2);
+
+  const prevSubtotalRef = React.useRef(billingSubtotal);
+  React.useEffect(() => {
+    if (prevSubtotalRef.current !== billingSubtotal) {
+      prevSubtotalRef.current = billingSubtotal;
+      
+      // Re-calculate Tax if visible
+      if (isTaxVisible) {
+        const taxPct = globalTaxName === "VAT 13%" ? 13 : 0;
+        if (taxPct > 0 && billingSubtotal > 0) {
+          const newTaxRs = (billingSubtotal * taxPct) / 100;
+          onTransactionTaxChange?.(formatAdjuster(newTaxRs));
+        } else {
+          onTransactionTaxChange?.("");
+        }
+      }
+
+      // Re-calculate Discount if visible
+      if (isDiscountVisible) {
+        const discPct = parseFloat(globalDiscountPercent) || 0;
+        if (discPct > 0 && billingSubtotal > 0) {
+          const newDiscRs = (billingSubtotal * discPct) / 100;
+          onTransactionDiscountChange?.(formatAdjuster(newDiscRs));
+        } else if (billingSubtotal === 0) {
+          onTransactionDiscountChange?.("");
+        }
+      }
+    }
+  }, [billingSubtotal, isTaxVisible, isDiscountVisible, globalTaxName, globalDiscountPercent, onTransactionTaxChange, onTransactionDiscountChange]);
+
+  const handleTaxSelect = (taxName: string, percent: number) => {
+    setGlobalTaxName(taxName);
+    setIsTaxDropdownOpen(false);
+    if (percent > 0 && billingSubtotal > 0) {
+      const amt = (billingSubtotal * percent) / 100;
+      onTransactionTaxChange?.(formatAdjuster(amt));
+    } else {
+      onTransactionTaxChange?.("");
+    }
+  };
+
+  const handleGlobalDiscountPercentChange = (val: string) => {
+    setGlobalDiscountPercent(val);
+    const percentNum = parseFloat(val) || 0;
+    if (percentNum > 0 && billingSubtotal > 0) {
+      const amt = (billingSubtotal * percentNum) / 100;
+      onTransactionDiscountChange?.(formatAdjuster(amt));
+    } else {
+      onTransactionDiscountChange?.("");
+    }
+  };
+
+  const handleGlobalDiscountAmountChange = (val: string) => {
+    onTransactionDiscountChange?.(val);
+    const amtNum = parseFloat(val) || 0;
+    if (amtNum > 0 && billingSubtotal > 0) {
+      const pct = (amtNum / billingSubtotal) * 100;
+      setGlobalDiscountPercent(formatAdjuster(pct));
+    } else {
+      setGlobalDiscountPercent("");
+    }
+  };
+
+  // Edit billing item modal state
+  const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
+  const editingItem = editingIndex !== null ? billingItems[editingIndex] : null;
+
   const isCash = paymentType === "cash";
-  const hasAmountEntered = !!amount.trim() && parseFloat(amount) > 0;
   const isDirectPaymentType =
     entryType === "Payment In" || entryType === "Payment Out";
   const isItemizedType =
@@ -133,8 +241,23 @@ export default function ReusableTransactionForm({
   const receivedLabel = isReceivedType ? "Received" : "Paid";
   const showReceivedCheckbox = entryType === "Sale" || entryType === "Purchase";
 
+  // Calculations for Billing Items
+  const discountNum = parseFloat(transactionDiscount || "0") || 0;
+  const taxNum = parseFloat(transactionTax || "0") || 0;
+  const additionalNum = additionalChargesList.reduce((acc, charge) => acc + (parseFloat(charge.amount || "0") || 0), 0);
+  
+  const computedTotal = Math.max(0, billingSubtotal - discountNum + taxNum + additionalNum);
+
+  // Helper to format decimals beautifully
+  const formatDecimal = (num: number) => Number.isInteger(num) ? num.toString() : num.toFixed(2);
+
   // Calculations for Balance Due
-  const totalNum = parseFloat(amount) || 0;
+  const totalNum = hasBillingItems ? computedTotal : (parseFloat(amount) || 0);
+  const displayAmount = hasBillingItems ? formatDecimal(computedTotal) : amount;
+  
+  // Also override hasAmountEntered
+  const hasAmountEntered = hasBillingItems ? true : (!!amount.trim() && parseFloat(amount) > 0);
+
   const receivedNum =
     receivedAmount.trim() !== ""
       ? parseFloat(receivedAmount) || 0
@@ -212,7 +335,10 @@ export default function ReusableTransactionForm({
   return (
     <ScrollView
       className="flex-1 bg-slate-100"
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
       keyboardShouldPersistTaps="handled"
+      onScrollBeginDrag={Keyboard.dismiss}
+      showsVerticalScrollIndicator={false}
     >
       {/* ── Subheader Details Row (Ref No / Date) ───────────────── */}
       <View className="flex-row bg-surface border-b border-slate-200">
@@ -278,6 +404,7 @@ export default function ReusableTransactionForm({
 
           <View className="flex-row items-center justify-between min-h-[44px]">
             <TextInput
+              ref={partyInputRef}
               value={partyNameText}
               onChangeText={onPartyNameChange}
               onFocus={() => setIsPartyFocused(true)}
@@ -373,12 +500,14 @@ export default function ReusableTransactionForm({
               <Text className="text-primary font-bold text-sm mr-1">
                 Add Items
               </Text>
-              <Text className="text-slate-400 font-normal text-sm">
-                (Optional)
-              </Text>
+              {!hasBillingItems && (
+                <Text className="text-slate-400 font-normal text-sm">
+                  (Optional)
+                </Text>
+              )}
             </TouchableOpacity>
 
-            {/* Barcode Scanner Button (Same Height, Increased Width w-16) */}
+            {/* Barcode Scanner Button */}
             <TouchableOpacity
               onPress={onBarcodeScanPress}
               activeOpacity={0.7}
@@ -390,6 +519,250 @@ export default function ReusableTransactionForm({
                 color="#0EA5E9"
               />
             </TouchableOpacity>
+          </View>
+        )}
+
+        {/* ── Billing Items List ────────────────────────── */}
+        {hasBillingItems && (
+          <View className="mt-4">
+            {/* Collapsible Card */}
+            <View className="bg-surface rounded-xl border border-slate-200 overflow-hidden shadow-xs">
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setIsBillingItemsExpanded(!isBillingItemsExpanded)}
+                className={`flex-row justify-between items-center px-4 py-3 ${isBillingItemsExpanded ? 'border-b border-slate-100' : ''}`}
+              >
+                <Text className="text-sm font-bold text-slate-800">
+                  Billing Items ({billingItems.length})
+                </Text>
+                <Feather name={isBillingItemsExpanded ? "minus" : "plus"} size={18} color="#64748B" />
+              </TouchableOpacity>
+              
+              {isBillingItemsExpanded && (
+                <>
+                  <View className="px-4">
+                    {billingItems.map((item, index) => (
+                      <View key={index} className="py-3 border-b border-slate-100 flex-row justify-between">
+                        <View className="flex-1 mr-2">
+                          <Text className="text-sm font-bold text-text mb-1">
+                            {item.item.name}
+                          </Text>
+                          <Text className="text-xs text-slate-500 font-medium mb-0.5">
+                            {item.quantity} x Rs. {item.rate} = Rs. {(item.quantity * item.rate).toFixed(2)}
+                          </Text>
+                          {item.discountAmount > 0 && (
+                            <Text className="text-xs text-slate-500 font-medium">
+                              Discount = Rs. {item.discountAmount.toFixed(2)}
+                            </Text>
+                          )}
+                        </View>
+                        <View className="items-end justify-between">
+                          <Text className="text-sm font-bold text-text">
+                            Rs. {item.totalAmount.toFixed(2)}
+                          </Text>
+                          <View className="flex-row items-center">
+                            <TouchableOpacity
+                              onPress={() => setEditingIndex(index)}
+                              activeOpacity={0.6}
+                              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                              className="p-2"
+                            >
+                              <Feather name="edit-2" size={17} color="#64748B" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              onPress={() => onRemoveBillingItem?.(index)}
+                              activeOpacity={0.6}
+                              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                              className="p-2 ml-1"
+                            >
+                              <Feather name="trash-2" size={17} color="#EF4444" />
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+
+                  <View className="flex-row justify-between items-center px-4 py-3">
+                    <Text className="text-sm font-medium text-slate-500">Subtotal</Text>
+                    <Text className="text-sm font-bold text-text">
+                      Rs. {formatDecimal(billingSubtotal)}
+                    </Text>
+                  </View>
+                </>
+              )}
+            </View>
+
+            {/* Action Links & Inputs */}
+            {canAddAdjusters && (
+              <View className="mt-4">
+                {/* Active Adjusters Container (White Card) */}
+                {(isDiscountVisible || isTaxVisible || additionalChargesList.length > 0) && (
+                  <View className="bg-surface rounded-xl shadow-xs p-4 mb-3 gap-y-4">
+                    {/* Discount Row */}
+                    {isDiscountVisible && (
+                      <View className="flex-row items-center justify-between">
+                        <View className="flex-row items-center flex-1">
+                          <TouchableOpacity
+                            onPress={() => {
+                              setIsDiscountVisible(false);
+                              onTransactionDiscountChange?.("");
+                              setGlobalDiscountPercent("");
+                            }}
+                            className="mr-3"
+                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                          >
+                            <Feather name="trash-2" size={18} color="#EF4444" />
+                          </TouchableOpacity>
+                          <Text className="text-sm font-medium text-slate-500">Discount</Text>
+                        </View>
+                        
+                        <View className="flex-row items-center">
+                          <View className="flex-row items-center border-b border-slate-300 w-16 justify-end pb-0.5">
+                            <TextInput
+                              value={globalDiscountPercent}
+                              onChangeText={handleGlobalDiscountPercentChange}
+                              placeholder="0"
+                              placeholderTextColor="#94A3B8"
+                              className="text-right text-sm text-text font-semibold p-0 h-6 flex-1"
+                              keyboardType="numeric"
+                            />
+                            <Text className="text-sm font-medium text-slate-600 ml-1">%</Text>
+                          </View>
+                          
+                          <Feather name="link" size={16} color="#10B981" className="mx-3" />
+                          
+                          <View className="flex-row items-center border-b border-slate-300 w-24 justify-end pb-0.5">
+                            <Text className="text-sm font-medium text-slate-600 mr-1">Rs.</Text>
+                            <TextInput
+                              value={transactionDiscount}
+                              onChangeText={handleGlobalDiscountAmountChange}
+                              placeholder="0"
+                              placeholderTextColor="#94A3B8"
+                              className="text-right text-sm text-text font-semibold p-0 h-6 flex-1"
+                              keyboardType="numeric"
+                            />
+                          </View>
+                        </View>
+                      </View>
+                    )}
+
+                    {/* Tax Row */}
+                    {isTaxVisible && (
+                      <View className="flex-row items-center justify-between">
+                        <View className="flex-row items-center flex-1">
+                          <TouchableOpacity
+                            onPress={() => {
+                              setIsTaxVisible(false);
+                              onTransactionTaxChange?.("");
+                            }}
+                            className="mr-3"
+                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                          >
+                            <Feather name="trash-2" size={18} color="#EF4444" />
+                          </TouchableOpacity>
+                          <Text className="text-sm font-medium text-slate-500">Tax</Text>
+                        </View>
+                        
+                        <View className="flex-row items-center">
+                          <TouchableOpacity 
+                            onPress={() => setIsTaxDropdownOpen(true)}
+                            activeOpacity={0.7}
+                            className="flex-row items-center border-b border-slate-300 w-24 justify-between pb-0.5 mr-4 h-6 relative"
+                          >
+                            <Text className="text-sm text-text font-medium flex-1">
+                              {globalTaxName || "VAT 0%"}
+                            </Text>
+                            <Feather name="chevron-down" size={14} color="#64748B" />
+                          </TouchableOpacity>
+                          
+                          <View className="flex-row items-center border-b border-slate-300 w-24 justify-end pb-0.5">
+                            <Text className="text-sm font-medium text-slate-600 mr-1">Rs.</Text>
+                            <TextInput
+                              value={transactionTax}
+                              onChangeText={onTransactionTaxChange}
+                              placeholder="0"
+                              placeholderTextColor="#94A3B8"
+                              className="text-right text-sm text-text font-semibold p-0 h-6 flex-1"
+                              keyboardType="numeric"
+                            />
+                          </View>
+                        </View>
+                      </View>
+                    )}
+
+                    {/* Additional Charges Rows */}
+                    {additionalChargesList.map((charge, index) => (
+                      <View key={`charge-${index}`} className="flex-row items-center justify-between mt-2">
+                        <View className="flex-row items-center flex-1">
+                          <TouchableOpacity
+                            onPress={() => {
+                              const newList = [...additionalChargesList];
+                              newList.splice(index, 1);
+                              onAdditionalChargesListChange?.(newList);
+                            }}
+                            className="mr-3"
+                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                          >
+                            <Feather name="trash-2" size={18} color="#EF4444" />
+                          </TouchableOpacity>
+                          <View className="flex-1 border-b border-slate-300 pb-0.5 mr-4">
+                            <TextInput
+                              value={charge.name}
+                              onChangeText={(text) => {
+                                const newList = [...additionalChargesList];
+                                newList[index].name = text;
+                                onAdditionalChargesListChange?.(newList);
+                              }}
+                              placeholder="Enter Charge Name"
+                              placeholderTextColor="#94A3B8"
+                              className="text-sm text-text font-medium p-0 h-6"
+                            />
+                          </View>
+                        </View>
+                        
+                        <View className="flex-row items-center border-b border-slate-300 w-24 justify-end pb-0.5">
+                          <Text className="text-sm font-medium text-slate-600 mr-1">Rs.</Text>
+                          <TextInput
+                            value={charge.amount}
+                            onChangeText={(text) => {
+                              const newList = [...additionalChargesList];
+                              newList[index].amount = text;
+                              onAdditionalChargesListChange?.(newList);
+                            }}
+                            placeholder="0"
+                            placeholderTextColor="#94A3B8"
+                            className="text-right text-sm text-text font-semibold p-0 h-6 flex-1"
+                            keyboardType="numeric"
+                          />
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {/* Add Links (Right aligned) */}
+                <View className="items-end gap-y-2.5 px-1">
+                  {!isDiscountVisible && transactionDiscount === "" && (
+                    <TouchableOpacity onPress={() => setIsDiscountVisible(true)}>
+                      <Text className="text-emerald-500 font-medium text-sm">+ Add Discount</Text>
+                    </TouchableOpacity>
+                  )}
+                  {!isTaxVisible && transactionTax === "" && (
+                    <TouchableOpacity onPress={() => setIsTaxVisible(true)}>
+                      <Text className="text-emerald-500 font-medium text-sm">+ Add TAX</Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity 
+                    onPress={() => {
+                      onAdditionalChargesListChange?.([...additionalChargesList, { name: "", amount: "" }]);
+                    }}
+                  >
+                    <Text className="text-emerald-500 font-medium text-sm">+ Add Additional Charges</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </View>
         )}
       </View>
@@ -405,21 +778,22 @@ export default function ReusableTransactionForm({
                 {receivedLabel}
               </Text>
               <TouchableOpacity
-                onPress={() => amountInputRef.current?.focus()}
-                activeOpacity={1}
+                onPress={() => !hasBillingItems && amountInputRef.current?.focus()}
+                activeOpacity={hasBillingItems ? 1 : 0.7}
                 className={`flex-row items-center h-8 w-[150px] justify-end border-b border-dashed ${
                   isAmountFocused ? "border-primary" : "border-slate-400"
-                }`}
+                } ${hasBillingItems ? "opacity-70" : ""}`}
               >
                 <Text className="text-base font-bold text-slate-800 mr-2">
                   Rs
                 </Text>
                 <TextInput
                   ref={amountInputRef}
-                  value={amount}
+                  value={displayAmount}
                   onChangeText={onAmountChange}
                   onFocus={() => setIsAmountFocused(true)}
                   onBlur={() => setIsAmountFocused(false)}
+                  editable={!hasBillingItems}
                   placeholder=""
                   keyboardType="numeric"
                   style={{ paddingVertical: 0, includeFontPadding: false }}
@@ -444,7 +818,7 @@ export default function ReusableTransactionForm({
                     Rs
                   </Text>
                   <Text className="text-lg font-bold text-emerald-600 text-right flex-1">
-                    {(parseFloat(amount) || 0).toFixed(2)}
+                    {totalNum.toFixed(2)}
                   </Text>
                 </View>
               </View>
@@ -459,21 +833,22 @@ export default function ReusableTransactionForm({
                 Total Amount
               </Text>
               <TouchableOpacity
-                onPress={() => amountInputRef.current?.focus()}
-                activeOpacity={1}
+                onPress={() => !hasBillingItems && amountInputRef.current?.focus()}
+                activeOpacity={hasBillingItems ? 1 : 0.7}
                 className={`flex-row items-center h-8 w-[150px] justify-end border-b border-dashed ${
                   isAmountFocused ? "border-primary" : "border-slate-400"
-                }`}
+                } ${hasBillingItems ? "opacity-70 border-transparent" : ""}`}
               >
                 <Text className="text-base font-bold text-slate-800 mr-2">
                   Rs
                 </Text>
                 <TextInput
                   ref={amountInputRef}
-                  value={amount}
+                  value={displayAmount}
                   onChangeText={onAmountChange}
                   onFocus={() => setIsAmountFocused(true)}
                   onBlur={() => setIsAmountFocused(false)}
+                  editable={!hasBillingItems}
                   placeholder=""
                   keyboardType="numeric"
                   style={{ paddingVertical: 0, includeFontPadding: false }}
@@ -487,8 +862,8 @@ export default function ReusableTransactionForm({
               </Text>
             )}
 
-            {/* Revealed breakdown for Credit Sales/Purchases when Total Amount is entered */}
-            {isItemizedType && !isCash && hasAmountEntered && (
+            {/* Revealed breakdown for Credit Sales/Purchases when Total Amount > 0 */}
+            {isItemizedType && !isCash && hasAmountEntered && totalNum > 0 && (
               <View className="mt-3.5 gap-3.5">
                 {/* Received / Paid Row (Bold Label) */}
                 <View className="flex-row items-center justify-between h-8">
@@ -639,6 +1014,63 @@ export default function ReusableTransactionForm({
         selectedMethod={paymentMethod}
         onSelectMethod={(method) => setPaymentMethod(method)}
       />
+
+      {/* Edit Billing Item Modal (inline, no navigation needed) */}
+      <AddBillingItemModal
+        visible={editingIndex !== null}
+        item={editingItem ? editingItem.item : null}
+        mode="edit"
+        initialValues={
+          editingItem
+            ? {
+                quantity: editingItem.quantity,
+                rate: editingItem.rate,
+                discountAmount: editingItem.discountAmount,
+              }
+            : null
+        }
+        onClose={() => setEditingIndex(null)}
+        onSave={(updated: BillingItemValues) => {
+          if (editingIndex === null) return;
+          onUpdateBillingItem?.(editingIndex, updated);
+          setEditingIndex(null);
+        }}
+        onRemove={() => {
+          if (editingIndex === null) return;
+          onRemoveBillingItem?.(editingIndex);
+          setEditingIndex(null);
+        }}
+      />
+
+      {/* Tax Dropdown Modal */}
+      <Modal
+        visible={isTaxDropdownOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsTaxDropdownOpen(false)}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setIsTaxDropdownOpen(false)}
+          className="flex-1 bg-black/20 justify-center items-center"
+        >
+          <View className="bg-surface rounded-xl shadow-lg w-48 overflow-hidden">
+            <TouchableOpacity
+              onPress={() => handleTaxSelect("VAT 0%", 0)}
+              className="px-5 py-4 border-b border-slate-100"
+            >
+              <Text className="text-base font-medium text-slate-800">VAT 0%</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleTaxSelect("VAT 13%", 13)}
+              className="px-5 py-4"
+            >
+              <Text className="text-base font-medium text-slate-800">VAT 13%</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
     </ScrollView>
   );
 }

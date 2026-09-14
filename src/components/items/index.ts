@@ -66,3 +66,19 @@ export type { ItemCategoryModalProps } from "./ItemCategoryModal";
 
 export { CreateItemCategoryModal } from "./CreateItemCategoryModal";
 export type { CreateItemCategoryModalProps } from "./CreateItemCategoryModal";
+
+// ── Select Item Screen components ────────────────
+export { SelectItemHeader } from "./SelectItemHeader";
+export type { SelectItemHeaderProps } from "./SelectItemHeader";
+
+export { SelectItemFilterBar } from "./SelectItemFilterBar";
+export type { SelectItemFilterBarProps } from "./SelectItemFilterBar";
+
+export { SelectItemCard } from "./SelectItemCard";
+export type { SelectItemCardProps } from "./SelectItemCard";
+
+export { SelectItemEmptyState } from "./SelectItemEmptyState";
+export type { SelectItemEmptyStateProps } from "./SelectItemEmptyState";
+
+export { AddBillingItemModal } from "./AddBillingItemModal";
+export type { AddBillingItemModalProps } from "./AddBillingItemModal";

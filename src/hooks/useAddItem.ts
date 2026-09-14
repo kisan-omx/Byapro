@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { auth } from "../lib/firebase";
 import { getBusinessId } from "../services/quickEntryService";
-import { createItem, checkItemExistsByName } from "../services/itemService";
+import { createItem, checkItemExistsByName, checkItemExistsBySku } from "../services/itemService";
 import { itemEvents } from "../services/itemEvents";
 import { uploadItemImageAsync, checkImageSizeAsync } from "../services/storageService";
 import { generateUUID } from "../utils/uuid";
@@ -148,6 +148,16 @@ export function useAddItem() {
         setErrorMsg("Item name is already in use. Please choose a different name.");
         setSaving(false);
         return false;
+      }
+
+      // ── Duplicate SKU/barcode check ──────────────────────────────────
+      if (form.sku.trim()) {
+        const skuExists = await checkItemExistsBySku(businessId, form.sku.trim());
+        if (skuExists) {
+          setErrorMsg("This item with this code already exists. Try other code.");
+          setSaving(false);
+          return false;
+        }
       }
 
       const tempId = generateUUID();
