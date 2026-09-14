@@ -264,3 +264,37 @@ export async function checkItemExistsByName(
     return false;
   }
 }
+
+// ─────────────────────────────────────────────────
+// checkItemExistsBySku — duplicate SKU/barcode guard
+// ─────────────────────────────────────────────────
+/**
+ * Checks if an item with the given SKU/barcode already exists for the business.
+ * Case-insensitive. Returns false if sku is empty.
+ */
+export async function checkItemExistsBySku(
+  businessId: string,
+  sku: string,
+): Promise<boolean> {
+  const trimmed = sku.trim();
+  if (!trimmed || !businessId) return false;
+
+  try {
+    const { data, error } = await supabase
+      .from("items")
+      .select("id")
+      .eq("business_id", businessId)
+      .ilike("sku", trimmed)
+      .limit(1);
+
+    if (error) {
+      console.error("Error checking existing item by SKU:", error);
+      return false;
+    }
+
+    return Array.isArray(data) && data.length > 0;
+  } catch (err) {
+    console.error("Error checking existing item by SKU:", err);
+    return false;
+  }
+}

@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
@@ -48,6 +47,21 @@ export default function TransactionFormScreen() {
   const [note, setNote] = useState<string>("");
   const [isPartyModalVisible, setIsPartyModalVisible] = useState(false);
   const [isSaveAndNewMode, setIsSaveAndNewMode] = useState(false);
+
+  // Billing Items State
+  const [billingItems, setBillingItems] = useState<any[]>([]);
+  const [transactionDiscount, setTransactionDiscount] = useState<string>("");
+  const [transactionTax, setTransactionTax] = useState<string>("");
+  const [additionalChargesList, setAdditionalChargesList] = useState<{name: string, amount: string}[]>([]);
+
+  React.useEffect(() => {
+    // Dynamically require to avoid breaking if file doesn't exist yet
+    const { billingItemEvents } = require("../services/billingItemEvents");
+    const unsubscribe = billingItemEvents.onAdded((newItem: any) => {
+      setBillingItems((prev) => [...prev, newItem]);
+    });
+    return unsubscribe;
+  }, []);
 
   // Formatted date string (e.g. 20-Bhadra-2083 or current date)
   const dateStr = useMemo(() => {
@@ -119,24 +133,39 @@ export default function TransactionFormScreen() {
   );
 
   const handleAddItems = useCallback(() => {
-    Alert.alert("Add Items", "Item selection modal can be integrated here.");
-  }, []);
+    router.navigate({
+      pathname: "/select-item",
+      params: { type: entryType },
+    });
+  }, [router, entryType]);
 
   const handleBarcodeScan = useCallback(() => {
-    Alert.alert(
-      "Barcode Scanner",
-      "Barcode scanner camera view can be opened here.",
-    );
-  }, []);
+    router.navigate({
+      pathname: "/barcode-scan",
+      params: { type: entryType },
+    });
+  }, [router, entryType]);
 
   const executeRecord = useCallback(
     (isSaveAndNew: boolean) => {
       setIsSaveAndNewMode(isSaveAndNew);
-      handleRecord(entryType, amount, selectedParty, () => {
+
+      // Compute final amount if we have billing items
+      let finalAmount = amount;
+      if (billingItems && billingItems.length > 0) {
+        const subtotal = billingItems.reduce((acc, item) => acc + (item.totalAmount || 0), 0);
+        const discNum = parseFloat(transactionDiscount || "0") || 0;
+        const taxNum = parseFloat(transactionTax || "0") || 0;
+        const addNum = additionalChargesList.reduce((acc, charge) => acc + (parseFloat(charge.amount || "0") || 0), 0);
+        const computed = Math.max(0, subtotal - discNum + taxNum + addNum);
+        finalAmount = computed.toString();
+      }
+
+      handleRecord(entryType, finalAmount, selectedParty, () => {
         // Rollback state if background save fails completely
       });
     },
-    [handleRecord, entryType, amount, selectedParty],
+    [handleRecord, entryType, amount, selectedParty, billingItems, transactionDiscount, transactionTax, additionalChargesList],
   );
 
   const handleSave = useCallback(() => {
@@ -152,6 +181,10 @@ export default function TransactionFormScreen() {
     if (isSaveAndNewMode) {
       // Reset form for next entry
       setAmount("");
+      setBillingItems([]);
+      setTransactionDiscount("");
+      setTransactionTax("");
+      setAdditionalChargesList([]);
       setSelectedParty(null);
       setPartyNameText("");
       setNote("");
@@ -185,38 +218,51 @@ export default function TransactionFormScreen() {
         onBack={() => router.back()}
       />
 
-      {/* ── Keyboard Avoiding View (Buttons rest just on top of keyboard) ─ */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "padding"}
         keyboardVerticalOffset={0}
         className="flex-1"
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View className="flex-1">
+        <View className="flex-1">
             {/* ── Reusable Form Body ─────────────────────────────────────────── */}
             <ReusableTransactionForm
-              entryType={entryType}
-              paymentType={paymentType}
-              invoiceNo={invoiceNoText}
-              onInvoiceNoChange={setInvoiceNoText}
-              date={dateStr}
-              selectedParty={selectedParty}
-              partyNameText={partyNameText}
-              onPartyNameChange={handlePartyNameChange}
-              onPartyPress={() => setIsPartyModalVisible(true)}
-              amount={amount}
-              onAmountChange={(val) => {
-                clearValidationError();
-                setAmount(val);
-              }}
-              showAddItems={showAddItems}
-              onAddItemsPress={handleAddItems}
-              onBarcodeScanPress={handleBarcodeScan}
-              note={note}
-              onNoteChange={setNote}
-              partyError={partyError}
-              amountError={amountError}
-            />
+                entryType={entryType}
+                paymentType={paymentType}
+                invoiceNo={invoiceNoText}
+                onInvoiceNoChange={setInvoiceNoText}
+                date={dateStr}
+                selectedParty={selectedParty}
+                partyNameText={partyNameText}
+                onPartyNameChange={handlePartyNameChange}
+                onPartyPress={() => setIsPartyModalVisible(true)}
+                amount={amount}
+                onAmountChange={(val) => {
+                  clearValidationError();
+                  setAmount(val);
+                }}
+                showAddItems={showAddItems}
+                onAddItemsPress={handleAddItems}
+                onBarcodeScanPress={handleBarcodeScan}
+                billingItems={billingItems}
+                onRemoveBillingItem={(index) => {
+                  setBillingItems((prev) => prev.filter((_, i) => i !== index));
+                }}
+                onUpdateBillingItem={(index, updated) => {
+                  setBillingItems((prev) =>
+                    prev.map((item, i) => (i === index ? updated : item))
+                  );
+                }}
+                transactionDiscount={transactionDiscount}
+                onTransactionDiscountChange={setTransactionDiscount}
+                transactionTax={transactionTax}
+                onTransactionTaxChange={setTransactionTax}
+                additionalChargesList={additionalChargesList}
+                onAdditionalChargesListChange={setAdditionalChargesList}
+                note={note}
+                onNoteChange={setNote}
+                partyError={partyError}
+                amountError={amountError}
+              />
 
             {/* ── Reusable Footer (Save & New + Save, No Three Dot) ────────── */}
             <ReusableTransactionFooter
@@ -225,7 +271,6 @@ export default function TransactionFormScreen() {
               loading={saving}
             />
           </View>
-        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
 
       {/* ── Party / Category Selection Modal ─────────────────────────── */}
